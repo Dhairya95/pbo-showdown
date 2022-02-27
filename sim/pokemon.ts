@@ -72,6 +72,7 @@ export class Pokemon {
 	 */
 	position: number;
 	details: string;
+	uuid: string;
 
 	baseSpecies: Species;
 	species: Species;
@@ -303,6 +304,7 @@ export class Pokemon {
 		this.happiness = typeof set.happiness === 'number' ? this.battle.clampIntRange(set.happiness, 0, 255) : 255;
 		this.pokeball = this.set.pokeball || 'pokeball';
 		this.gigantamax = this.set.gigantamax || false;
+		this.uuid = this.set.uuid;
 
 		this.baseMoveSlots = [];
 		this.moveSlots = [];
@@ -331,7 +333,7 @@ export class Pokemon {
 		}
 
 		this.position = 0;
-		this.details = this.species.name + (this.level === 100 ? '' : ', L' + this.level) +
+		this.details = this.species.name + ', ' + this.uuid + (this.level === 100 ? '' : ', L' + this.level) +
 			(this.gender === '' ? '' : ', ' + this.gender) + (this.set.shiny ? ', shiny' : '');
 
 		this.status = '';
@@ -477,7 +479,7 @@ export class Pokemon {
 		const health = this.getHealth();
 		let details = this.details;
 		if (this.illusion) {
-			const illusionDetails = this.illusion.species.name + (this.level === 100 ? '' : ', L' + this.level) +
+			const illusionDetails = this.illusion.species.name + "," + this.illusion.uuid + (this.level === 100 ? '' : ', L' + this.level) +
 				(this.illusion.gender === '' ? '' : ', ' + this.illusion.gender) + (this.illusion.set.shiny ? ', shiny' : '');
 			details = illusionDetails;
 		}
@@ -1279,7 +1281,7 @@ export class Pokemon {
 			this.illusion ? this.illusion.species.name : species.baseSpecies;
 		if (isPermanent) {
 			this.baseSpecies = rawSpecies;
-			this.details = species.name + (this.level === 100 ? '' : ', L' + this.level) +
+			this.details = species.name + ', ' + this.uuid + (this.level === 100 ? '' : ', L' + this.level) +
 				(this.gender === '' ? '' : ', ' + this.gender) + (this.set.shiny ? ', shiny' : '');
 			this.battle.add('detailschange', this, (this.illusion || this).details);
 			if (source.effectType === 'Item') {

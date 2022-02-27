@@ -225,6 +225,12 @@ export const Teams = new class Teams {
 			set.species = this.unpackName(buf.substring(i, j), Dex.species) || set.name;
 			i = j + 1;
 
+			// COBBLED: uuid
+			j = buf.indexOf('|', i);
+			if (j < 0) return null;
+			set.uuid = buf.substring(i, j);
+			i = j + 1;
+
 			// item
 			j = buf.indexOf('|', i);
 			if (j < 0) return null;
