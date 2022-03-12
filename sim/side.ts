@@ -662,11 +662,11 @@ export class Side {
 		} else {
 			slot = parseInt(slotText) - 1;
 		}
-		if (isNaN(slot) || slot < 0) {
+		if (isNaN(slot) || slot < 0 || slotText.length > 2) {
 			// maybe it's a name/species id!
 			slot = -1;
 			for (const [i, mon] of this.pokemon.entries()) {
-				if (slotText!.toLowerCase() === mon.name.toLowerCase() || toID(slotText) === mon.species.id) {
+				if (slotText!.toLowerCase() === mon.name.toLowerCase() || toID(slotText) === mon.species.id || slotText! === mon.uuid) {
 					slot = i;
 					break;
 				}
