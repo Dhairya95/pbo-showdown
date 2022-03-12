@@ -14,6 +14,7 @@
  * @license MIT
  */
 
+import {Format} from './dex-formats';
 import {Dex, toID} from './dex';
 import {Teams} from './teams';
 import {Field} from './field';
@@ -157,7 +158,16 @@ export class Battle {
 		this.log = [];
 		this.add('t:', Math.floor(Date.now() / 1000));
 
-		const format = options.format || Dex.formats.get(options.formatid, true);
+		// COBBLED ========
+		let format = undefined
+		if (!!options.format && options.format.debug == undefined) {
+			// This is a format that was given as a loose object, needs to be ratified to a proper object
+			format = new Format(options.format);
+			// ==================================
+		} else {
+			format = options.format || Dex.formats.get(options.formatid, true);
+		}
+
 		this.format = format;
 		this.dex = Dex.forFormat(format);
 		this.gen = this.dex.gen;
