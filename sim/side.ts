@@ -978,9 +978,11 @@ export class Side {
 			}
 			break;
 		case 'move':
+			/* Allow passing when a move is needed. This is to allow PokéBall throwing from players.
 			if (!pokemon.fainted) {
 				return this.emitChoiceError(`Can't pass: Your ${pokemon.name} must make a move (or switch)`);
 			}
+			*/
 			break;
 		default:
 			return this.emitChoiceError(`Can't pass: Not a move or switch request`);
