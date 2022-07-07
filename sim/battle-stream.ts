@@ -110,6 +110,16 @@ export class BattleStream extends Streams.ObjectReadWriteStream<string> {
 			const [slot, optionsText] = splitFirst(message, ' ');
 			this.battle!.setPlayer(slot as SideID, JSON.parse(optionsText));
 			break;
+		case 'capture':
+			this.battle!.inputLog.push(`>capture ${message}`);
+			const pokemon = this.battle!.getPokemonByPNX(message);
+			if (!!pokemon) {
+				pokemon.capture();
+			} else {
+				throw new Error(`Capture targeted ${message} but that Pokémon does not exist.`);
+			}
+			break;
+
 		case 'p1':
 		case 'p2':
 		case 'p3':
