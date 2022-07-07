@@ -7,8 +7,23 @@
  * @license MIT
  */
 
+import exp = require('constants');
 import {Dex, toID} from './dex';
 import type {PRNG, PRNGSeed} from './prng';
+
+/**
+ * COBBLED: Represents additional move data
+ */
+export interface AdditionalMoveInfo {
+	/**
+	 * COBBLED: The maximum amount of PP the move has.
+	 */
+	maxPp: number;
+	/**
+	 * COBBLED: The current amount of PP the move has.
+	 */
+	pp: number;
+}
 
 export interface PokemonSet {
 	/**
@@ -21,6 +36,18 @@ export interface PokemonSet {
 	 * This should always be converted to an id before use.
 	 */
 	species: string;
+	/**
+	 * COBBLED: Unique Id for the Pokemon from the mod.
+	 */
+	uuid: string;
+	/**
+	 * COBBLED: The current health of the Pokemon being assigned from the mod.
+	 */
+	currentHealth: number;
+	/**
+	 * COBBLED: The current status of the Pokemon if any from the mod.
+	 */
+	status: string;
 	/**
 	 * This can be an id, e.g. "whiteherb" or a full name, e.g. "White Herb".
 	 * This should always be converted to an id before use.
@@ -38,6 +65,10 @@ export interface PokemonSet {
 	 * These should always be converted to ids before use.
 	 */
 	moves: string[];
+	/**
+	 * COBBLED: Holds any additional move data coming over from the mod.
+	 */
+	movesInfo: AdditionalMoveInfo[];
 	/**
 	 * This can be an id, e.g. "adamant" or a full name, e.g. "Adamant".
 	 * This should always be converted to an id before use.
@@ -231,6 +262,18 @@ export const Teams = new class Teams {
 			set.uuid = buf.substring(i, j);
 			i = j + 1;
 
+			// COBBLED: currentHealth
+			j = buf.indexOf('|', i);
+			if (j < 0) return null;
+			set.currentHealth = parseInt(buf.substring(i, j));
+			i = j + 1;
+
+			// COBBLED: status
+			j = buf.indexOf('|', i);
+			if (j < 0) return null;
+			set.status = buf.substring(i, j);
+			i = j + 1;
+
 			// item
 			j = buf.indexOf('|', i);
 			if (j < 0) return null;
@@ -251,6 +294,18 @@ export const Teams = new class Teams {
 			j = buf.indexOf('|', i);
 			if (j < 0) return null;
 			set.moves = buf.substring(i, j).split(',', 24).map(name => this.unpackName(name, Dex.moves));
+			i = j + 1;
+
+			// COBBLED: Additional move data
+			j = buf.indexOf('|', i);
+			if (j < 0) return null;
+			set.movesInfo = buf.substring(i, j).split(',', 24).map(moveData => {
+				const moveInfo: AdditionalMoveInfo = {} as AdditionalMoveInfo;
+				let data = moveData.split('/');
+				moveInfo.pp = parseInt(data[0]);
+				moveInfo.maxPp = parseInt(data[1]);
+				return moveInfo;
+			});
 			i = j + 1;
 
 			// nature

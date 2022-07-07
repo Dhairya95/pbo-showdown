@@ -311,6 +311,7 @@ export class Pokemon {
 		if (!this.set.moves?.length) {
 			throw new Error(`Set ${this.name} has no moves`);
 		}
+		let i = 0;
 		for (const moveid of this.set.moves) {
 			let move = this.battle.dex.moves.get(moveid);
 			if (!move.id) continue;
@@ -320,16 +321,22 @@ export class Pokemon {
 			}
 			let basepp = (move.noPPBoosts || move.isZ) ? move.pp : move.pp * 8 / 5;
 			if (this.battle.gen < 3) basepp = Math.min(61, basepp);
+
+			// Cobbled: Additional move info
+			let moveInfo = this.set.movesInfo[i];
 			this.baseMoveSlots.push({
 				move: move.name,
 				id: move.id,
-				pp: basepp,
-				maxpp: basepp,
+				// COBBLED: Apply move pp
+				pp: moveInfo.pp, 
+				// COBBLED: Apply
+				maxpp: moveInfo.maxPp,
 				target: move.target,
 				disabled: false,
 				disabledSource: '',
 				used: false,
 			});
+			i++;
 		}
 
 		this.position = 0;
@@ -449,7 +456,15 @@ export class Pokemon {
 		this.baseMaxhp = 0;
 		this.hp = 0;
 		this.clearVolatile();
-		this.hp = this.maxhp;
+
+		// COBBLED: Apply current health
+		this.hp = this.set.currentHealth;
+		// COBBLED: Apply status
+		if(!this.set.status) {
+			let status = this.battle.dex.conditions.get(this.set.status);
+			this.status = status.id;
+			this.statusState = {id: status.id, target: this};
+		}
 	}
 
 	toJSON(): AnyObject {
