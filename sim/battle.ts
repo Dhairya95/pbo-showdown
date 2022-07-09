@@ -1141,6 +1141,15 @@ export class Battle {
 		return null;
 	}
 
+	getPokemonByPNX(pnx: string) {
+		for (const side of this.sides) {
+			for (const pokemon of side.pokemon) {
+				if (pokemon.getSlot().toString() === pnx) return pokemon;
+			}
+		}
+		return null;
+	}
+
 	getAllPokemon() {
 		const pokemonList: Pokemon[] = [];
 		for (const side of this.sides) {
@@ -2240,6 +2249,43 @@ export class Battle {
 				}
 			}
 		}
+	}
+
+	capture(pokemon) {
+		if (this.ended) return;
+		if (!pokemon.fainted) {
+			this.add('capture', pokemon)
+			if (pokemon.side.pokemonLeft) pokemon.side.pokemonLeft--;
+			this.singleEvent('End', pokemon.getAbility(), pokemon.abilityState, pokemon);
+			pokemon.clearVolatile(false);
+			pokemon.fainted = true;
+			pokemon.illusion = null;
+			pokemon.isActive = false;
+			pokemon.isStarted = false;
+			pokemon.side.faintedThisTurn = pokemon;
+
+			if (this.checkWin()) return true;
+
+// 			this.checkFainted();
+
+// 			if (this.actions.dragIn(pokemon.side, pokemon.position)) {
+// 				this.add('Dragged in');
+// 			} else {
+// 				this.add('Did not drag in');
+// 				pokemon.side.faintedThisTurn = pokemon;
+// 			}
+
+// 			const activeData = pokemon.side.active.map(pk => pk?.getMoveRequestData());
+// 			const req = { active: activeData, side: pokemon.side.getRequestData()};
+// 			if (pokemon.side.allySide) {
+// 				req.ally = pokemon.side.allySide.getRequestData(true);
+// 			}
+//
+// 			pokemon.side.emitRequest(req);
+// 			pokemon.side.clearChoice();
+		}
+
+		return false;
 	}
 
 	faintMessages(lastFirst = false, forceCheck = false, checkWin = true) {

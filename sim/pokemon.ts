@@ -1407,6 +1407,12 @@ export class Pokemon {
 		return d;
 	}
 
+	capture() {
+		this.hp = 0;
+		this.switchFlag = false;
+		this.battle.capture(this);
+	}
+
 	damage(d: number, source: Pokemon | null = null, effect: Effect | null = null) {
 		if (!this.hp || isNaN(d) || d <= 0) return 0;
 		if (d < 1 && d > 0) d = 1;
