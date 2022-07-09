@@ -1144,7 +1144,6 @@ export class Battle {
 	getPokemonByPNX(pnx: string) {
 		for (const side of this.sides) {
 			for (const pokemon of side.pokemon) {
-				this.add(pokemon.getSlot().toString());
 				if (pokemon.getSlot().toString() === pnx) return pokemon;
 			}
 		}
