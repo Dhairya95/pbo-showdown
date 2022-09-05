@@ -28,3 +28,7 @@ export {TeamValidator} from './team-validator';
 // misc libraries
 
 export * from '../lib';
+
+// PokemonCobbled stuff
+
+export { Pokedex as CobbledPokedex } from '../data/mods/cobbled/pokedex';
