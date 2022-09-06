@@ -39,15 +39,15 @@ export interface PokemonSet {
 	/**
 	 * COBBLED: Unique Id for the Pokemon from the mod.
 	 */
-	uuid: string;
+	uuid?: string;
 	/**
 	 * COBBLED: The current health of the Pokemon being assigned from the mod.
 	 */
-	currentHealth: number;
+	currentHealth?: number;
 	/**
 	 * COBBLED: The current status of the Pokemon if any from the mod.
 	 */
-	status: string;
+	status?: string;
 	/**
 	 * This can be an id, e.g. "whiteherb" or a full name, e.g. "White Herb".
 	 * This should always be converted to an id before use.
@@ -68,7 +68,7 @@ export interface PokemonSet {
 	/**
 	 * COBBLED: Holds any additional move data coming over from the mod.
 	 */
-	movesInfo: AdditionalMoveInfo[];
+	movesInfo?: AdditionalMoveInfo[];
 	/**
 	 * This can be an id, e.g. "adamant" or a full name, e.g. "Adamant".
 	 * This should always be converted to an id before use.
