@@ -284,10 +284,13 @@ export const Teams = new class Teams {
 			j = buf.indexOf('|', i);
 			if (j < 0) return null;
 			const ability = buf.substring(i, j);
-			const species = Dex.species.get(set.species);
+			// COBBLED: No longer validate abilities as we can trust the server data, we need this as well to support more then 3/4 abilities.
+			/*
 			set.ability = ['', '0', '1', 'H', 'S'].includes(ability) ?
 				species.abilities[ability as '0' || '0'] || (ability === '' ? '' : '!!!ERROR!!!') :
 				this.unpackName(ability, Dex.abilities);
+			 */
+			set.ability = this.unpackName(ability, Dex.abilities);
 			i = j + 1;
 
 			// moves
