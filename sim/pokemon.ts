@@ -328,7 +328,7 @@ export class Pokemon {
 				// COBBLED: Apply move pp
 				pp: set.movesInfo[i].pp || basepp,
 				// COBBLED: Apply
-				maxpp: set.movesInfo[i] || basepp,
+				maxpp: set.movesInfo[i].maxPp || basepp,
 				target: move.target,
 				disabled: false,
 				disabledSource: '',
