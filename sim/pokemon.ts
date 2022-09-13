@@ -304,7 +304,7 @@ export class Pokemon {
 		this.happiness = typeof set.happiness === 'number' ? this.battle.clampIntRange(set.happiness, 0, 255) : 255;
 		this.pokeball = this.set.pokeball || 'pokeball';
 		this.gigantamax = this.set.gigantamax || false;
-		this.uuid = this.set.uuid;
+		this.uuid = this.set.uuid || '';
 
 		this.baseMoveSlots = [];
 		this.moveSlots = [];
@@ -322,15 +322,13 @@ export class Pokemon {
 			let basepp = (move.noPPBoosts || move.isZ) ? move.pp : move.pp * 8 / 5;
 			if (this.battle.gen < 3) basepp = Math.min(61, basepp);
 
-			// Cobbled: Additional move info
-			let moveInfo = this.set.movesInfo[i];
 			this.baseMoveSlots.push({
 				move: move.name,
 				id: move.id,
 				// COBBLED: Apply move pp
-				pp: moveInfo.pp, 
+				pp: set.movesInfo[i].pp || basepp,
 				// COBBLED: Apply
-				maxpp: moveInfo.maxPp,
+				maxpp: set.movesInfo[i].maxPp || basepp,
 				target: move.target,
 				disabled: false,
 				disabledSource: '',
@@ -458,7 +456,7 @@ export class Pokemon {
 		this.clearVolatile();
 
 		// COBBLED: Apply current health
-		this.hp = this.set.currentHealth;
+		this.hp = this.set.currentHealth || this.maxhp;
 		// COBBLED: Apply status
 		if(!this.set.status) {
 			let status = this.battle.dex.conditions.get(this.set.status);
