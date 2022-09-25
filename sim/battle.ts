@@ -1329,6 +1329,7 @@ export class Battle {
 		} else {
 			this.add('tie');
 		}
+		this.updatePP();
 		this.ended = true;
 		this.requestState = '';
 		for (const s of this.sides) {
@@ -1545,6 +1546,7 @@ export class Battle {
 				}
 			}
 		}
+		this.updatePP();
 		if (this.gen === 2) this.quickClawRoll = this.randomChance(60, 256);
 		if (this.gen === 3) this.quickClawRoll = this.randomChance(1, 5);
 
@@ -2251,7 +2253,7 @@ export class Battle {
 		}
 	}
 
-	capture(pokemon) {
+	capture(pokemon: Pokemon) {
 		if (this.ended) return;
 		if (!pokemon.fainted) {
 			this.add('capture', pokemon)
@@ -2286,6 +2288,15 @@ export class Battle {
 		}
 
 		return false;
+	}
+
+	// COBBLED: Sends out the entire team with updates on each move PP
+	updatePP() {
+		for (const side of this.sides) {
+			for (const pokemon of side.pokemon) {
+				this.add('pp_update', `${side.id}: ${pokemon.uuid}`, pokemon.moveSlots.map(move => `${move.id}: ${move.pp}`).join(', '));
+			}
+		}
 	}
 
 	faintMessages(lastFirst = false, forceCheck = false, checkWin = true) {
