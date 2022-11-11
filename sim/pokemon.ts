@@ -53,6 +53,7 @@ export class Pokemon {
 	readonly gender: GenderName;
 	readonly happiness: number;
 	readonly pokeball: string;
+	readonly dynamaxLevel: number;
 	readonly gigantamax: boolean;
 
 	/** Transform keeps the original pre-transformed Hidden Power in Gen 2-4. */
@@ -303,6 +304,7 @@ export class Pokemon {
 		if (this.gender === 'N') this.gender = '';
 		this.happiness = typeof set.happiness === 'number' ? this.battle.clampIntRange(set.happiness, 0, 255) : 255;
 		this.pokeball = this.set.pokeball || 'pokeball';
+		this.dynamaxLevel = typeof set.dynamaxLevel === 'number' ? this.battle.clampIntRange(set.dynamaxLevel, 0, 10) : 10;
 		this.gigantamax = this.set.gigantamax || false;
 		this.uuid = this.set.uuid || '';
 
@@ -800,9 +802,12 @@ export class Pokemon {
 	}
 
 	ignoringItem() {
-		return !!((this.battle.gen >= 5 && !this.isActive) ||
+		return !!(
+			this.itemState.knockedOff || // Gen 3-4
+			(this.battle.gen >= 5 && !this.isActive) ||
 			(this.hasAbility('klutz') && !this.getItem().ignoreKlutz) ||
-			this.volatiles['embargo'] || this.battle.field.pseudoWeather['magicroom']);
+			this.volatiles['embargo'] || this.battle.field.pseudoWeather['magicroom']
+		);
 	}
 
 	deductPP(move: string | Move, amount?: number | null, target?: Pokemon | null | false) {
@@ -1139,7 +1144,7 @@ export class Pokemon {
 
 	transformInto(pokemon: Pokemon, effect?: Effect) {
 		const species = pokemon.species;
-		if (pokemon.fainted || pokemon.illusion || (pokemon.volatiles['substitute'] && this.battle.gen >= 5) ||
+		if (pokemon.fainted || this.illusion || pokemon.illusion || (pokemon.volatiles['substitute'] && this.battle.gen >= 5) ||
 			(pokemon.transformed && this.battle.gen >= 2) || (this.transformed && this.battle.gen >= 5) ||
 			species.name === 'Eternatus-Eternamax') {
 			return false;
@@ -1166,6 +1171,7 @@ export class Pokemon {
 		let statName: StatIDExceptHP;
 		for (statName in this.storedStats) {
 			this.storedStats[statName] = pokemon.storedStats[statName];
+			if (this.modifiedStats) this.modifiedStats[statName] = pokemon.modifiedStats![statName]; // Gen 1: Copy modified stats.
 		}
 		this.moveSlots = [];
 		this.set.ivs = (this.battle.gen >= 5 ? this.set.ivs : pokemon.set.ivs);
@@ -1189,7 +1195,7 @@ export class Pokemon {
 		}
 		let boostName: BoostID;
 		for (boostName in pokemon.boosts) {
-			this.boosts[boostName] = pokemon.boosts[boostName]!;
+			this.boosts[boostName] = pokemon.boosts[boostName];
 		}
 		if (this.battle.gen >= 6) {
 			const volatilesToCopy = ['focusenergy', 'gmaxchistrike', 'laserfocus'];
@@ -1508,7 +1514,7 @@ export class Pokemon {
 	cureStatus(silent = false) {
 		if (!this.hp || !this.status) return false;
 		this.battle.add('-curestatus', this, this.status, silent ? '[silent]' : '[msg]');
-		if (this.status === 'slp' && !this.hasAbility('comatose') && this.removeVolatile('nightmare')) {
+		if (this.status === 'slp' && this.removeVolatile('nightmare')) {
 			this.battle.add('-end', this, 'Nightmare', '[silent]');
 		}
 		this.setStatus('');
@@ -1585,7 +1591,12 @@ export class Pokemon {
 	 * Unlike cureStatus, does not give cure message
 	 */
 	clearStatus() {
-		return this.setStatus('');
+		if (!this.hp || !this.status) return false;
+		if (this.status === 'slp' && this.removeVolatile('nightmare')) {
+			this.battle.add('-end', this, 'Nightmare', '[silent]');
+		}
+		this.setStatus('');
+		return true;
 	}
 
 	getStatus() {
@@ -1593,7 +1604,7 @@ export class Pokemon {
 	}
 
 	eatItem(force?: boolean, source?: Pokemon, sourceEffect?: Effect) {
-		if (!this.item) return false;
+		if (!this.item || this.itemState.knockedOff) return false;
 		if ((!this.hp && this.item !== 'jabocaberry' && this.item !== 'rowapberry') || !this.isActive) return false;
 
 		if (!sourceEffect && this.battle.effect) sourceEffect = this.battle.effect;
@@ -1633,7 +1644,7 @@ export class Pokemon {
 
 	useItem(source?: Pokemon, sourceEffect?: Effect) {
 		if ((!this.hp && !this.getItem().isGem) || !this.isActive) return false;
-		if (!this.item) return false;
+		if (!this.item || this.itemState.knockedOff) return false;
 
 		if (!sourceEffect && this.battle.effect) sourceEffect = this.battle.effect;
 		if (!source && this.battle.event && this.battle.event.target) source = this.battle.event.target;
@@ -1669,11 +1680,11 @@ export class Pokemon {
 
 	takeItem(source?: Pokemon) {
 		if (!this.isActive) return false;
-		if (!this.item) return false;
+		if (!this.item || this.itemState.knockedOff) return false;
 		if (!source) source = this;
 		if (this.battle.gen === 4) {
 			if (toID(this.ability) === 'multitype') return false;
-			if (source && toID(source.ability) === 'multitype') return false;
+			if (toID(source.ability) === 'multitype') return false;
 		}
 		const item = this.getItem();
 		if (this.battle.runEvent('TakeItem', this, source, null, item)) {
@@ -1687,6 +1698,7 @@ export class Pokemon {
 
 	setItem(item: string | Item, source?: Pokemon, effect?: Effect) {
 		if (!this.hp || !this.isActive) return false;
+		if (this.itemState.knockedOff) return false;
 		if (typeof item === 'string') item = this.battle.dex.items.get(item);
 
 		const effectid = this.battle.effect ? this.battle.effect.id : '';

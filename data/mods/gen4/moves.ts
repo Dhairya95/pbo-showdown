@@ -27,8 +27,9 @@ export const Moves: {[k: string]: ModdedMoveData} = {
 		inherit: true,
 		onHit(target, source) {
 			this.add('-cureteam', source, '[from] move: Aromatherapy');
-			for (const pokemon of source.side.pokemon) {
-				pokemon.clearStatus();
+			const allies = [...target.side.pokemon, ...target.side.allySide?.pokemon || []];
+			for (const ally of allies) {
+				ally.clearStatus();
 			}
 		},
 	},
@@ -447,9 +448,6 @@ export const Moves: {[k: string]: ModdedMoveData} = {
 				}
 				this.effectState.move = target.lastMove.id;
 				this.add('-start', target, 'Encore');
-				if (!this.queue.willMove(target)) {
-					this.effectState.duration++;
-				}
 			},
 			onOverrideAction(pokemon) {
 				return this.effectState.move;
@@ -540,12 +538,16 @@ export const Moves: {[k: string]: ModdedMoveData} = {
 	},
 	focuspunch: {
 		inherit: true,
-		beforeMoveCallback() { },
+		priorityChargeCallback() {},
+		beforeTurnCallback(pokemon) {
+			pokemon.addVolatile('focuspunch');
+		},
+		beforeMoveCallback() {},
 		onTry(pokemon) {
-			if (pokemon.volatiles['focuspunch'] && pokemon.volatiles['focuspunch'].lostFocus) {
+			if (pokemon.volatiles['focuspunch']?.lostFocus) {
 				this.attrLastMove('[still]');
 				this.add('cant', pokemon, 'Focus Punch', 'Focus Punch');
-				return false;
+				return null;
 			}
 		},
 	},
@@ -698,8 +700,9 @@ export const Moves: {[k: string]: ModdedMoveData} = {
 		inherit: true,
 		onHit(target, source) {
 			this.add('-activate', source, 'move: Heal Bell');
-			for (const pokemon of source.side.pokemon) {
-				if (!pokemon.hasAbility('soundproof')) pokemon.cureStatus(true);
+			const allies = [...target.side.pokemon, ...target.side.allySide?.pokemon || []];
+			for (const ally of allies) {
+				if (!ally.hasAbility('soundproof')) ally.cureStatus(true);
 			}
 		},
 	},
@@ -756,7 +759,7 @@ export const Moves: {[k: string]: ModdedMoveData} = {
 			onSwitchIn(target) {
 				if (target.hp > 0) {
 					target.heal(target.maxhp);
-					target.setStatus('');
+					target.clearStatus();
 					this.add('-heal', target, target.getHealth, '[from] move: Healing Wish');
 					target.side.removeSlotCondition(target, 'healingwish');
 					target.lastMove = this.lastMove;
@@ -827,10 +830,14 @@ export const Moves: {[k: string]: ModdedMoveData} = {
 	},
 	knockoff: {
 		inherit: true,
-		onAfterHit(target, source) {
-			const item = target.takeItem();
-			if (item) {
-				this.add('-enditem', target, item.name, '[from] move: Knock Off', '[of] ' + source);
+		onAfterHit(target, source, move) {
+			if (!target.item || target.itemState.knockedOff) return;
+			if (target.ability === 'multitype') return;
+			const item = target.getItem();
+			if (this.runEvent('TakeItem', target, source, move, item)) {
+				target.itemState.knockedOff = true;
+				this.add('-enditem', target, item.name, '[from] move: Knock Off');
+				this.hint("In Gens 3-4, Knock Off only makes the target's item unusable; it cannot obtain a new item.", true);
 			}
 		},
 	},
@@ -933,7 +940,7 @@ export const Moves: {[k: string]: ModdedMoveData} = {
 				}
 				if (target.hp > 0) {
 					target.heal(target.maxhp);
-					target.setStatus('');
+					target.clearStatus();
 					for (const moveSlot of target.moveSlots) {
 						moveSlot.pp = moveSlot.maxpp;
 					}
@@ -1388,6 +1395,13 @@ export const Moves: {[k: string]: ModdedMoveData} = {
 		inherit: true,
 		accuracy: 90,
 	},
+	secretpower: {
+		inherit: true,
+		secondary: {
+			chance: 30,
+			status: 'par',
+		},
+	},
 	sketch: {
 		inherit: true,
 		onHit(target, source) {
@@ -1643,7 +1657,7 @@ export const Moves: {[k: string]: ModdedMoveData} = {
 				this.add('-sidestart', side, 'move: Toxic Spikes');
 				this.effectState.layers++;
 			},
-			onSwitchIn(pokemon) {
+			onEntryHazard(pokemon) {
 				if (!pokemon.isGrounded()) return;
 				if (pokemon.hasType('Poison')) {
 					this.add('-sideend', pokemon.side, 'move: Toxic Spikes', '[of] ' + pokemon);

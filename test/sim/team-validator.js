@@ -219,6 +219,13 @@ describe('Team Validator', function () {
 		illegal = TeamValidator.get('gen4ou').validateTeam(team);
 		assert(illegal);
 
+		// Shedinja has a different Egg Group (Mineral) than Nincada (Bug); needs to use Nincada's Egg Group
+		team = [
+			{species: 'shedinja', ability: 'wonderguard', moves: ['silverwind', 'gust'], evs: {hp: 1}},
+		];
+		illegal = TeamValidator.get('gen3ou').validateTeam(team);
+		assert.equal(illegal, null);
+
 		// Chansey can't have Chansey-only egg moves as well as Happiny-only level-up moves
 
 		team = [
@@ -436,6 +443,22 @@ describe('Team Validator', function () {
 		assert(illegal);
 	});
 
+	it.skip('should reject Volbeat with both Lunge and Dizzy Punch in Gen 7', function () {
+		const team = [
+			{species: 'volbeat', ability: 'swarm', moves: ['lunge', 'dizzypunch'], evs: {hp: 1}},
+		];
+		const illegal = TeamValidator.get('gen7anythinggoes').validateTeam(team);
+		assert(illegal);
+	});
+
+	it.skip('should accept this chainbreed on Toxicroak', function () {
+		const team = [
+			{species: 'toxicroak', ability: 'dryskin', moves: ['bulletpunch', 'crosschop', 'fakeout'], evs: {hp: 4}},
+		];
+		const illegal = TeamValidator.get('gen5ou').validateTeam(team);
+		assert.equal(illegal, null);
+	});
+
 	it('should require Hidden Ability status to match event moves', function () {
 		const team = [
 			{species: 'raichu', ability: 'lightningrod', moves: ['extremespeed'], evs: {hp: 1}},
@@ -556,6 +579,14 @@ describe('Team Validator', function () {
 		assert.equal(illegal, null);
 	});
 
+	it.skip('should reject mutually incompatible Dream World moves', function () {
+		const team = [
+			{species: 'spinda', ability: 'contrary', moves: ['superpower', 'fakeout'], evs: {hp: 1}},
+		];
+		const illegal = TeamValidator.get('gen5ou').validateTeam(team);
+		assert.equal(illegal);
+	});
+
 	it('should consider Dream World Abilities as Hidden based on Gen 5 data', function () {
 		let team = [
 			{species: 'kecleon', ability: 'colorchange', moves: ['reflecttype'], evs: {hp: 1}},
@@ -660,7 +691,7 @@ describe('Team Validator', function () {
 		assert(illegal);
 	});
 
-	it.skip('should not allow events to use moves only obtainable in a previous generation', function () {
+	it('should not allow events to use moves only obtainable in a previous generation', function () {
 		const team = [
 			{species: 'zeraora', ability: 'voltabsorb', shiny: true, moves: ['knockoff'], evs: {hp: 1}},
 		];
@@ -683,6 +714,16 @@ describe('Team Validator', function () {
 		];
 		illegal = TeamValidator.get('gen7anythinggoes').validateTeam(team);
 		assert(illegal);
+	});
+
+	it(`should accept event Pokemon with oldgen tutor moves and HAs in formats with Ability Patch`, function () {
+		const team = [
+			{species: 'heatran', ability: 'flamebody', moves: ['eruption'], evs: {hp: 1}},
+			{species: 'regirock', ability: 'sturdy', moves: ['counter'], evs: {hp: 1}},
+			{species: 'zapdos', ability: 'static', moves: ['aircutter'], evs: {hp: 1}},
+		];
+		const illegal = TeamValidator.get('gen8anythinggoes').validateTeam(team);
+		assert.equal(illegal, null);
 	});
 
 	it('should not allow Gen 1 JP events', function () {
@@ -748,6 +789,49 @@ describe('Team Validator', function () {
 		];
 		const illegal = TeamValidator.get('gen1ou').validateTeam(team);
 		assert.equal(illegal, null);
+	});
+
+	it('should tier Zacian and Zamazenta formes seperately', () => {
+		let team = [
+			{species: 'zamazenta-crowned', ability: 'dauntlessshield', item: 'rustedshield', moves: ['howl'], evs: {hp: 1}},
+		];
+		let illegal = TeamValidator.get('gen8almostanyability').validateTeam(team);
+		assert.equal(illegal, null);
+
+		team = [
+			{species: 'zamazenta', ability: 'dauntlessshield', item: 'lifeorb', moves: ['howl'], evs: {hp: 1}},
+		];
+		illegal = TeamValidator.get('gen8almostanyability').validateTeam(team);
+		assert(illegal);
+	});
+
+	it('should prevent Pokemon that don\'t evolve via level-up and evolve from a Pokemon that does evolve via level-up from being underleveled.', function () {
+		const team = [
+			{species: 'nidoking', level: 1, ability: 'sheerforce', moves: ['earthpower'], evs: {hp: 1}},
+			{species: 'mamoswine', level: 1, ability: 'oblivious', moves: ['earthquake'], evs: {hp: 1}},
+		];
+		const illegal = TeamValidator.get('gen8anythinggoes').validateTeam(team);
+		assert(illegal);
+	});
+
+	it('should correctly enforce per-game evolution restrictions', function () {
+		let team = [
+			{species: 'raichualola', ability: 'surgesurfer', moves: ['doublekick'], evs: {hp: 1}},
+		];
+		let illegal = TeamValidator.get('gen8anythinggoes').validateTeam(team);
+		assert(illegal);
+
+		team = [
+			{species: 'raichualola', ability: 'surgesurfer', moves: ['sing'], evs: {hp: 1}},
+		];
+		illegal = TeamValidator.get('gen8anythinggoes@@@minsourcegen=8').validateTeam(team);
+		assert(illegal);
+
+		team = [
+			{species: 'exeggutoralola', ability: 'frisk', moves: ['psybeam'], evs: {hp: 1}},
+		];
+		illegal = TeamValidator.get('gen8anythinggoes').validateTeam(team);
+		assert(illegal);
 	});
 
 	/*********************************************************

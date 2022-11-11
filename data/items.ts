@@ -76,7 +76,7 @@ export const Items: {[itemid: string]: ItemData} = {
 			if (target.boosts['spe'] === 6 || noAtkChange || noContraryAtkChange) {
 				return;
 			}
-			if (effect.id === 'intimidate') {
+			if (effect.name === 'Intimidate') {
 				target.useItem();
 			}
 		},
@@ -131,7 +131,7 @@ export const Items: {[itemid: string]: ItemData} = {
 			if (!this.runEvent('TryHeal', pokemon)) return false;
 		},
 		onEat(pokemon) {
-			this.heal(pokemon.baseMaxhp * 0.33);
+			this.heal(pokemon.baseMaxhp / 3);
 			if (pokemon.getNature().minus === 'spd') {
 				pokemon.addVolatile('confusion');
 			}
@@ -752,6 +752,7 @@ export const Items: {[itemid: string]: ItemData} = {
 		num: 16,
 		gen: 4,
 		isPokeball: true,
+		isNonstandard: "Unobtainable",
 	},
 	chestoberry: {
 		name: "Chesto Berry",
@@ -1685,7 +1686,7 @@ export const Items: {[itemid: string]: ItemData} = {
 			if (!this.runEvent('TryHeal', pokemon)) return false;
 		},
 		onEat(pokemon) {
-			this.heal(pokemon.baseMaxhp * 0.33);
+			this.heal(pokemon.baseMaxhp / 3);
 			if (pokemon.getNature().minus === 'atk') {
 				pokemon.addVolatile('confusion');
 			}
@@ -2348,7 +2349,7 @@ export const Items: {[itemid: string]: ItemData} = {
 		},
 		num: 1120,
 		gen: 8,
-		// Hazard Immunity implemented in moves.js
+		// Hazard Immunity implemented in moves.ts
 	},
 	helixfossil: {
 		name: "Helix Fossil",
@@ -2417,7 +2418,7 @@ export const Items: {[itemid: string]: ItemData} = {
 			if (!this.runEvent('TryHeal', pokemon)) return false;
 		},
 		onEat(pokemon) {
-			this.heal(pokemon.baseMaxhp * 0.33);
+			this.heal(pokemon.baseMaxhp / 3);
 			if (pokemon.getNature().minus === 'def') {
 				pokemon.addVolatile('confusion');
 			}
@@ -2585,7 +2586,7 @@ export const Items: {[itemid: string]: ItemData} = {
 			type: "Dragon",
 		},
 		onDamagingHit(damage, target, source, move) {
-			if (move.category === 'Physical' && source.hp && source.isActive) {
+			if (move.category === 'Physical' && source.hp && source.isActive && !source.hasAbility('magicguard')) {
 				if (target.eatItem()) {
 					this.damage(source.baseMaxhp / (target.hasAbility('ripen') ? 4 : 8), source, target);
 				}
@@ -2904,7 +2905,7 @@ export const Items: {[itemid: string]: ItemData} = {
 			return this.chainModify([5324, 4096]);
 		},
 		onAfterMoveSecondarySelf(source, target, move) {
-			if (source && source !== target && move && move.category !== 'Status') {
+			if (source && source !== target && move && move.category !== 'Status' && !source.forceSwitchFlag) {
 				this.damage(source.baseMaxhp / 10, source, source, this.dex.items.get('lifeorb'));
 			}
 		},
@@ -3151,7 +3152,7 @@ export const Items: {[itemid: string]: ItemData} = {
 			if (!this.runEvent('TryHeal', pokemon)) return false;
 		},
 		onEat(pokemon) {
-			this.heal(pokemon.baseMaxhp * 0.33);
+			this.heal(pokemon.baseMaxhp / 3);
 			if (pokemon.getNature().minus === 'spe') {
 				pokemon.addVolatile('confusion');
 			}
@@ -3773,6 +3774,7 @@ export const Items: {[itemid: string]: ItemData} = {
 		num: 500,
 		gen: 4,
 		isPokeball: true,
+		isNonstandard: "Unobtainable",
 	},
 	passhoberry: {
 		name: "Passho Berry",
@@ -4574,7 +4576,13 @@ export const Items: {[itemid: string]: ItemData} = {
 		fling: {
 			basePower: 100,
 		},
-		onUpdate(pokemon) {
+		onStart(pokemon) {
+			if (!pokemon.ignoringItem() && this.field.getPseudoWeather('trickroom')) {
+				pokemon.useItem();
+			}
+		},
+		onAnyPseudoWeatherStart() {
+			const pokemon = this.effectState.target;
 			if (this.field.getPseudoWeather('trickroom')) {
 				pokemon.useItem();
 			}
@@ -4643,7 +4651,7 @@ export const Items: {[itemid: string]: ItemData} = {
 			type: "Dark",
 		},
 		onDamagingHit(damage, target, source, move) {
-			if (move.category === 'Special' && source.hp && source.isActive) {
+			if (move.category === 'Special' && source.hp && source.isActive && !source.hasAbility('magicguard')) {
 				if (target.eatItem()) {
 					this.damage(source.baseMaxhp / (target.hasAbility('ripen') ? 4 : 8), source, target);
 				}
@@ -4662,7 +4670,6 @@ export const Items: {[itemid: string]: ItemData} = {
 			}
 			return true;
 		},
-		forcedForme: "Zamazenta-Crowned",
 		itemUser: ["Zamazenta-Crowned"],
 		num: 1104,
 		gen: 8,
@@ -4676,7 +4683,6 @@ export const Items: {[itemid: string]: ItemData} = {
 			}
 			return true;
 		},
-		forcedForme: "Zacian-Crowned",
 		itemUser: ["Zacian-Crowned"],
 		num: 1103,
 		gen: 8,
@@ -4877,7 +4883,7 @@ export const Items: {[itemid: string]: ItemData} = {
 		},
 		onAfterMoveSecondarySelfPriority: -1,
 		onAfterMoveSecondarySelf(pokemon, target, move) {
-			if (move.totalDamage) {
+			if (move.totalDamage && !pokemon.forceSwitchFlag) {
 				this.heal(move.totalDamage / 8, pokemon);
 			}
 		},
@@ -6726,7 +6732,7 @@ export const Items: {[itemid: string]: ItemData} = {
 			if (!this.runEvent('TryHeal', pokemon)) return false;
 		},
 		onEat(pokemon) {
-			this.heal(pokemon.baseMaxhp * 0.33);
+			this.heal(pokemon.baseMaxhp / 3);
 			if (pokemon.getNature().minus === 'spa') {
 				pokemon.addVolatile('confusion');
 			}

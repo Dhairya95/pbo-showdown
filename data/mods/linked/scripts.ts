@@ -465,9 +465,7 @@ export const Scripts: ModdedBattleScriptsData = {
 							choice: 'beforeTurnMove', pokemon: action.pokemon, move: action.move, targetLoc: action.targetLoc,
 						}));
 					}
-					if (action.mega) {
-						// TODO: Check that the Pokémon is not affected by Sky Drop.
-						// (This is currently being done in `runMegaEvo`).
+					if (action.mega && !action.pokemon.isSkyDropped()) {
 						actions.unshift(...this.resolveAction({
 							choice: 'megaEvo',
 							pokemon: action.pokemon,
@@ -514,7 +512,7 @@ export const Scripts: ModdedBattleScriptsData = {
 				if (!action.targetLoc) {
 					target = this.battle.getRandomTarget(action.pokemon, action.move);
 					// TODO: what actually happens here?
-					if (target) action.targetLoc = target.getLocOf(action.pokemon);
+					if (target) action.targetLoc = action.pokemon.getLocOf(target);
 				}
 				action.originalTarget = action.pokemon.getAtLoc(action.targetLoc);
 			}

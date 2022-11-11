@@ -57,6 +57,10 @@ export const Conditions: {[k: string]: ConditionData} = {
 			// 1-3 turns
 			this.effectState.startTime = this.random(2, 5);
 			this.effectState.time = this.effectState.startTime;
+
+			if (target.removeVolatile('nightmare')) {
+				this.add('-end', target, 'Nightmare', '[silent]');
+			}
 		},
 		onBeforeMovePriority: 10,
 		onBeforeMove(pokemon, target, move) {
@@ -101,7 +105,7 @@ export const Conditions: {[k: string]: ConditionData} = {
 		onModifyMove(move, pokemon) {
 			if (move.flags['defrost']) {
 				this.add('-curestatus', pokemon, 'frz', '[from] move: ' + move);
-				pokemon.setStatus('');
+				pokemon.clearStatus();
 			}
 		},
 		onAfterMoveSecondary(target, source, move) {
@@ -283,7 +287,7 @@ export const Conditions: {[k: string]: ConditionData} = {
 			// note that this is not updated for moves called by other moves
 			// i.e. if Dig is called by Metronome, lastMoveTargetLoc will still be the user's location
 			let moveTargetLoc: number = attacker.lastMoveTargetLoc!;
-			if (effect.sourceEffect && this.dex.moves.get(effect.id).target === 'normal') {
+			if (effect.sourceEffect && this.dex.moves.get(effect.id).target !== 'self') {
 				// this move was called by another move such as Metronome
 				// and needs a random target to be determined this turn
 				// it will already have one by now if there is any valid target
@@ -478,7 +482,7 @@ export const Conditions: {[k: string]: ConditionData} = {
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
 				if (this.gen <= 5) this.effectState.duration = 0;
-				this.add('-weather', 'RainDance', '[from] ability: ' + effect, '[of] ' + source);
+				this.add('-weather', 'RainDance', '[from] ability: ' + effect.name, '[of] ' + source);
 			} else {
 				this.add('-weather', 'RainDance');
 			}
@@ -513,7 +517,7 @@ export const Conditions: {[k: string]: ConditionData} = {
 			}
 		},
 		onFieldStart(field, source, effect) {
-			this.add('-weather', 'PrimordialSea', '[from] ability: ' + effect, '[of] ' + source);
+			this.add('-weather', 'PrimordialSea', '[from] ability: ' + effect.name, '[of] ' + source);
 		},
 		onFieldResidualOrder: 1,
 		onFieldResidual() {
@@ -548,7 +552,7 @@ export const Conditions: {[k: string]: ConditionData} = {
 		onFieldStart(battle, source, effect) {
 			if (effect?.effectType === 'Ability') {
 				if (this.gen <= 5) this.effectState.duration = 0;
-				this.add('-weather', 'SunnyDay', '[from] ability: ' + effect, '[of] ' + source);
+				this.add('-weather', 'SunnyDay', '[from] ability: ' + effect.name, '[of] ' + source);
 			} else {
 				this.add('-weather', 'SunnyDay');
 			}
@@ -587,7 +591,7 @@ export const Conditions: {[k: string]: ConditionData} = {
 			}
 		},
 		onFieldStart(field, source, effect) {
-			this.add('-weather', 'DesolateLand', '[from] ability: ' + effect, '[of] ' + source);
+			this.add('-weather', 'DesolateLand', '[from] ability: ' + effect.name, '[of] ' + source);
 		},
 		onImmunity(type, pokemon) {
 			if (pokemon.hasItem('utilityumbrella')) return;
@@ -623,7 +627,7 @@ export const Conditions: {[k: string]: ConditionData} = {
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
 				if (this.gen <= 5) this.effectState.duration = 0;
-				this.add('-weather', 'Sandstorm', '[from] ability: ' + effect, '[of] ' + source);
+				this.add('-weather', 'Sandstorm', '[from] ability: ' + effect.name, '[of] ' + source);
 			} else {
 				this.add('-weather', 'Sandstorm');
 			}
@@ -653,7 +657,7 @@ export const Conditions: {[k: string]: ConditionData} = {
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
 				if (this.gen <= 5) this.effectState.duration = 0;
-				this.add('-weather', 'Hail', '[from] ability: ' + effect, '[of] ' + source);
+				this.add('-weather', 'Hail', '[from] ability: ' + effect.name, '[of] ' + source);
 			} else {
 				this.add('-weather', 'Hail');
 			}
@@ -682,7 +686,7 @@ export const Conditions: {[k: string]: ConditionData} = {
 			}
 		},
 		onFieldStart(field, source, effect) {
-			this.add('-weather', 'DeltaStream', '[from] ability: ' + effect, '[of] ' + source);
+			this.add('-weather', 'DeltaStream', '[from] ability: ' + effect.name, '[of] ' + source);
 		},
 		onFieldResidualOrder: 1,
 		onFieldResidual() {
@@ -697,8 +701,8 @@ export const Conditions: {[k: string]: ConditionData} = {
 	dynamax: {
 		name: 'Dynamax',
 		noCopy: true,
-		duration: 3,
 		onStart(pokemon) {
+			this.effectState.turns = 0;
 			pokemon.removeVolatile('minimize');
 			pokemon.removeVolatile('substitute');
 			if (pokemon.volatiles['torment']) {
@@ -708,12 +712,11 @@ export const Conditions: {[k: string]: ConditionData} = {
 			if (['cramorantgulping', 'cramorantgorging'].includes(pokemon.species.id) && !pokemon.transformed) {
 				pokemon.formeChange('cramorant');
 			}
-			this.add('-start', pokemon, 'Dynamax');
-			if (pokemon.gigantamax) this.add('-formechange', pokemon, pokemon.species.name + '-Gmax');
+			this.add('-start', pokemon, 'Dynamax', pokemon.gigantamax ? 'Gmax' : '');
 			if (pokemon.baseSpecies.name === 'Shedinja') return;
 
 			// Changes based on dynamax level, 2 is max (at LVL 10)
-			const ratio = 2; // TODO: Implement Dynamax levels
+			const ratio = 1.5 + (pokemon.dynamaxLevel * 0.05);
 
 			pokemon.maxhp = Math.floor(pokemon.maxhp * ratio);
 			pokemon.hp = Math.floor(pokemon.hp * ratio);
@@ -737,9 +740,11 @@ export const Conditions: {[k: string]: ConditionData} = {
 			return null;
 		},
 		onResidualPriority: -100,
+		onResidual() {
+			this.effectState.turns++;
+		},
 		onEnd(pokemon) {
 			this.add('-end', pokemon, 'Dynamax');
-			if (pokemon.gigantamax) this.add('-formechange', pokemon, pokemon.species.name);
 			if (pokemon.baseSpecies.name === 'Shedinja') return;
 			pokemon.hp = pokemon.getUndynamaxedHP();
 			pokemon.maxhp = pokemon.baseMaxhp;

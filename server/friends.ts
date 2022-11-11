@@ -333,7 +333,7 @@ const TRANSACTIONS: {[k: string]: (input: any[]) => DatabaseResult} = {
 			}
 			if (totalRequests >= MAX_REQUESTS) {
 				throw new FailureMessage(
-					`You already have ${MAX_REQUESTS} outgoing friend requests. Use "/friends view sent" to see your outgoing requests.`
+					`You already have ${MAX_REQUESTS} pending friend requests. Use "/friends view sent" to see your outgoing requests and "/friends view receive" to see your incoming requests.`
 				);
 			}
 			statements.insertRequest.run(senderID, receiverID, Date.now());
@@ -410,7 +410,7 @@ export const PM = new ProcessManager.QueryProcessManager<DatabaseRequest, Databa
 	}
 });
 
-if (!PM.isParentProcess) {
+if (require.main === module) {
 	global.Config = (require as any)('./config-loader').Config;
 	if (Config.usesqlite) {
 		FriendsDatabase.setupDatabase();
@@ -431,6 +431,6 @@ if (!PM.isParentProcess) {
 	});
 	// eslint-disable-next-line no-eval
 	Repl.start(`friends-${process.pid}`, cmd => eval(cmd));
-} else {
+} else if (!process.send) {
 	PM.spawn(Config.friendsprocesses || 1);
 }

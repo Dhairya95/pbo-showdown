@@ -4,7 +4,8 @@
   "version": "0.11.7",
   "main": ".sim-dist/index.js",
   "dependencies": {
-    "@swc/core": "^1.2.61",
+    "@types/pg": "^8.6.1",
+    "@swc/core": "1.2.205",
     "preact": "^10.5.15",
     "preact-render-to-string": "^5.1.19",
     "probe-image-size": "^5.0.0",
@@ -34,13 +35,13 @@
     "build": "node build -production",
     "tsc": "tsc",
     "fast-lint": "eslint . --config .eslintrc-no-types.json --cache --cache-location .eslintcache-no-types --ext .js,.ts,.tsx",
-    "lint": "eslint . --cache --ext .js,.ts,.tsx",
+    "lint": "eslint . --cache --ext .js,.ts,.tsx --max-warnings 0",
     "fix": "eslint . --cache --ext .js,.ts,.tsx --fix",
-    "full-lint": "eslint . --cache --ext .js,.ts --max-warnings 0",
+    "full-lint": "npm run lint",
     "pretest": "npm run lint",
     "test": "mocha",
     "posttest": "npm run tsc",
-    "full-test": "npm run full-lint && npm run tsc && mocha --timeout 8000 --forbid-only -g \".*\""
+    "full-test": "npm run lint && npm run tsc && mocha --timeout 8000 --forbid-only -g \".*\""
   },
   "husky": {
     "hooks": {

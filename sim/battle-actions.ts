@@ -120,6 +120,8 @@ export class BattleActions {
 			oldActive.isActive = false;
 			oldActive.isStarted = false;
 			oldActive.usedItemThisTurn = false;
+			oldActive.statsRaisedThisTurn = false;
+			oldActive.statsLoweredThisTurn = false;
 			oldActive.position = pokemon.position;
 			pokemon.position = pos;
 			side.pokemon[pokemon.position] = pokemon;
@@ -165,7 +167,17 @@ export class BattleActions {
 	}
 	runSwitch(pokemon: Pokemon) {
 		this.battle.runEvent('Swap', pokemon);
-		this.battle.runEvent('SwitchIn', pokemon);
+
+		if (this.battle.gen >= 5) {
+			this.battle.runEvent('SwitchIn', pokemon);
+		}
+
+		this.battle.runEvent('EntryHazard', pokemon);
+
+		if (this.battle.gen <= 4) {
+			this.battle.runEvent('SwitchIn', pokemon);
+		}
+
 		if (this.battle.gen <= 2 && !pokemon.side.faintedThisTurn && pokemon.draggedIn !== this.battle.turn) {
 			this.battle.runEvent('AfterSwitchInSelf', pokemon);
 		}
@@ -281,6 +293,7 @@ export class BattleActions {
 			this.battle.add('-zpower', pokemon);
 			pokemon.side.zMoveUsed = true;
 		}
+
 		const moveDidSomething = this.useMove(baseMove, pokemon, target, sourceEffect, zMove, maxMove);
 		this.battle.lastSuccessfulMoveThisTurn = moveDidSomething ? this.battle.activeMove && this.battle.activeMove.id : null;
 		if (this.battle.activeMove) move = this.battle.activeMove;
@@ -1111,9 +1124,6 @@ export class BattleActions {
 				continue;
 			}
 			damage[i] = curDamage;
-			if (move.selfdestruct === 'ifHit') {
-				this.battle.faint(source, source, move);
-			}
 		}
 		return damage;
 	}
@@ -1217,6 +1227,9 @@ export class BattleActions {
 					}
 				}
 			}
+			if (moveData.selfdestruct === 'ifHit' && damage[i] !== false) {
+				this.battle.faint(source, source, move);
+			}
 			if (moveData.selfSwitch) {
 				if (this.battle.canSwitch(source.side)) {
 					didSomething = true;
@@ -1229,7 +1242,6 @@ export class BattleActions {
 			damage[i] = this.combineResults(damage[i], didSomething === null ? false : didSomething);
 			didAnything = this.combineResults(didAnything, didSomething);
 		}
-
 
 		if (!didAnything && didAnything !== 0 && !moveData.self && !moveData.selfdestruct) {
 			if (!isSelf && !isSecondary) {
@@ -1765,13 +1777,6 @@ export class BattleActions {
 	runMegaEvo(pokemon: Pokemon) {
 		const speciesid = pokemon.canMegaEvo || pokemon.canUltraBurst;
 		if (!speciesid) return false;
-
-		// Pokémon affected by Sky Drop cannot mega evolve. Enforce it here for now.
-		for (const foeActive of pokemon.foes()) {
-			if (foeActive.volatiles['skydrop']?.source === pokemon) {
-				return false;
-			}
-		}
 
 		pokemon.formeChange(speciesid, pokemon.getItem(), true);
 
