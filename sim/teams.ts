@@ -48,6 +48,7 @@ export interface PokemonSet {
 	 * COBBLED: The current status of the Pokemon if any from the mod.
 	 */
 	status?: string;
+	statusDuration?: number;
 	/**
 	 * This can be an id, e.g. "whiteherb" or a full name, e.g. "White Herb".
 	 * This should always be converted to an id before use.
@@ -278,6 +279,11 @@ export const Teams = new class Teams {
 			j = buf.indexOf('|', i);
 			if (j < 0) return null;
 			set.status = buf.substring(i, j);
+			i = j + 1;
+
+			j = buf.indexOf('|', i);
+			if (j < 0) return null;
+			set.statusDuration = parseInt(buf.substring(i, j));
 			i = j + 1;
 
 			// item

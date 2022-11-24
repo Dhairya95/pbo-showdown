@@ -460,10 +460,15 @@ export class Pokemon {
 		// COBBLED: Apply current health
 		this.hp = this.set.currentHealth || this.maxhp;
 		// COBBLED: Apply status
-		if(!this.set.status) {
+		if(!!this.set.status) {
 			let status = this.battle.dex.conditions.get(this.set.status);
 			this.status = status.id;
 			this.statusState = {id: status.id, target: this};
+			if (this.set.statusDuration !== -1) {
+				this.statusState.duration = this.set.statusDuration;
+				this.statusState.startTime = this.set.statusDuration;
+				this.statusState.time = this.set.statusDuration;
+			}
 		}
 	}
 
