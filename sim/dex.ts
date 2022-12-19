@@ -462,6 +462,7 @@ export class ModdedDex {
 			 'gen7sm',
 			 'gen7letsgo',
 			 'gen7mixandmega',
+			 'gen8',
 			 'gen8bdsp',
 			 'gen8dlc1',
 			 'gen8linked',
