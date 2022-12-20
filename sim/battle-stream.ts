@@ -104,7 +104,11 @@ export class BattleStream extends Streams.ObjectReadWriteStream<string> {
 				if (t === 'end' && !this.keepAlive) this.pushEnd();
 			};
 			if (this.debug) options.debug = true;
-			this.battle = new Battle(options);
+			try {
+				this.battle = new Battle(options);
+			} catch (e) {
+				console.log(e);
+			}
 			break;
 		case 'player':
 			const [slot, optionsText] = splitFirst(message, ' ');

@@ -1,53 +1,53 @@
 export const Formats: FormatList = [
 
 	{
-		section: "Pokémon Cobbled",
+		section: "Cobblemon",
 	},
 	{
-		name: "Cobbled Singles",
+		name: "Cobblemon Singles",
 		threads: [],
 
-		mod: 'cobbled',
+		mod: 'cobblemon',
 		ruleset: [],
 		gameType: "singles"
 	},
 	{
-		name: "Cobbled Doubles",
+		name: "Cobblemon Doubles",
 		threads: [],
 
-		mod: 'cobbled',
+		mod: 'cobblemon',
 		ruleset: [],
 		gameType: "doubles"
 	},
 	{
-		name: "Cobbled Triples",
+		name: "Cobblemon Triples",
 		threads: [],
 
-		mod: 'cobbled',
+		mod: 'cobblemon',
 		ruleset: [],
 		gameType: "triples"
 	},
 	{
-		name: "Cobbled Rotation",
+		name: "Cobblemon Rotation",
 		threads: [],
 
-		mod: 'cobbled',
+		mod: 'cobblemon',
 		ruleset: [],
 		gameType: "rotation"
 	},
 	{
-		name: "Cobbled Multi",
+		name: "Cobblemon Multi",
 		threads: [],
 
-		mod: 'cobbled',
+		mod: 'cobblemon',
 		ruleset: [],
 		gameType: "multi"
 	},
 	{
-		name: "Cobbled Free for All",
+		name: "Cobblemon Free for All",
 		threads: [],
 
-		mod: 'cobbled',
+		mod: 'cobblemon',
 		ruleset: [],
 		gameType: "freeforall"
 	},
