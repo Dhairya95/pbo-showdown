@@ -8590,6 +8590,8 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		weightkg: 850,
 		color: "White",
 		eggGroups: ["Undiscovered"],
+		requiredItem: "Adamant Crystal",
+		changesFrom: "Dialga",
 		gen: 8,
 	},
 	palkia: {
@@ -8620,6 +8622,8 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		weightkg: 660,
 		color: "Purple",
 		eggGroups: ["Undiscovered"],
+		requiredItem: "Lustrous Globe",
+		changesFrom: "Palkia",
 		gen: 8,
 	},
 	heatran: {
@@ -8676,7 +8680,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		weightkg: 650,
 		color: "Black",
 		eggGroups: ["Undiscovered"],
-		requiredItem: "Griseous Orb",
+		requiredItem: "Griseous Core",
 		changesFrom: "Giratina",
 	},
 	cresselia: {
@@ -13141,8 +13145,8 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		weightkg: 180,
 		color: "White",
 		prevo: "Crabrawler",
-		evoType: "levelExtra",
-		evoCondition: "at Mount Lanakila",
+		evoType: "useItem",
+		evoItem: "Ice Stone",
 		eggGroups: ["Water 3"],
 	},
 	oricorio: {
@@ -16475,7 +16479,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		weightkg: 43,
 		color: "Purple",
 		prevo: "Sneasel-Hisui",
-		evoType: "useItem",
+		evoType: "levelHold",
 		evoItem: "Razor Claw",
 		evoCondition: "during the day",
 		eggGroups: ["Field"],
@@ -17215,7 +17219,6 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		prevo: "Capsakid",
 		evoType: "useItem",
 		evoItem: "Fire Stone",
-		evoLevel: 30,
 		eggGroups: ["Grass"],
 	},
 	rellor: {
@@ -17659,7 +17662,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		heightm: 2.2,
 		weightkg: 320,
 		color: "Purple",
-		tags: ["Sub-Legendary", "Paradox"],
+		tags: ["Paradox"],
 		eggGroups: ["Undiscovered"],
 	},
 	screamtail: {
@@ -17672,7 +17675,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		heightm: 1.2,
 		weightkg: 8,
 		color: "Pink",
-		tags: ["Sub-Legendary", "Paradox"],
+		tags: ["Paradox"],
 		eggGroups: ["Undiscovered"],
 	},
 	brutebonnet: {
@@ -17685,7 +17688,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		heightm: 1.2,
 		weightkg: 21,
 		color: "Gray",
-		tags: ["Sub-Legendary", "Paradox"],
+		tags: ["Paradox"],
 		eggGroups: ["Undiscovered"],
 	},
 	fluttermane: {
@@ -17698,7 +17701,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		heightm: 1.4,
 		weightkg: 4,
 		color: "Gray",
-		tags: ["Sub-Legendary", "Paradox"],
+		tags: ["Paradox"],
 		eggGroups: ["Undiscovered"],
 	},
 	slitherwing: {
@@ -17711,7 +17714,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		heightm: 3.2,
 		weightkg: 92,
 		color: "Red",
-		tags: ["Sub-Legendary", "Paradox"],
+		tags: ["Paradox"],
 		eggGroups: ["Undiscovered"],
 	},
 	sandyshocks: {
@@ -17724,7 +17727,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		heightm: 2.3,
 		weightkg: 60,
 		color: "Gray",
-		tags: ["Sub-Legendary", "Paradox"],
+		tags: ["Paradox"],
 		eggGroups: ["Undiscovered"],
 	},
 	irontreads: {
@@ -17737,7 +17740,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		heightm: 0.9,
 		weightkg: 240,
 		color: "Gray",
-		tags: ["Sub-Legendary", "Paradox"],
+		tags: ["Paradox"],
 		eggGroups: ["Undiscovered"],
 	},
 	ironbundle: {
@@ -17750,7 +17753,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		heightm: 0.6,
 		weightkg: 11,
 		color: "Red",
-		tags: ["Sub-Legendary", "Paradox"],
+		tags: ["Paradox"],
 		eggGroups: ["Undiscovered"],
 	},
 	ironhands: {
@@ -17763,7 +17766,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		heightm: 1.8,
 		weightkg: 380.7,
 		color: "Gray",
-		tags: ["Sub-Legendary", "Paradox"],
+		tags: ["Paradox"],
 		eggGroups: ["Undiscovered"],
 	},
 	ironjugulis: {
@@ -17776,7 +17779,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		heightm: 1.3,
 		weightkg: 111,
 		color: "Blue",
-		tags: ["Sub-Legendary", "Paradox"],
+		tags: ["Paradox"],
 		eggGroups: ["Undiscovered"],
 	},
 	ironmoth: {
@@ -17789,7 +17792,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		heightm: 1.2,
 		weightkg: 36,
 		color: "Yellow",
-		tags: ["Sub-Legendary", "Paradox"],
+		tags: ["Paradox"],
 		eggGroups: ["Undiscovered"],
 	},
 	ironthorns: {
@@ -17802,7 +17805,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		heightm: 1.6,
 		weightkg: 303,
 		color: "Green",
-		tags: ["Sub-Legendary", "Paradox"],
+		tags: ["Paradox"],
 		eggGroups: ["Undiscovered"],
 	},
 	frigibax: {
@@ -17887,7 +17890,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		color: "Yellow",
 		prevo: "Gimmighoul",
 		evoType: "other",
-		evoCondition: "Give 999 Coins",
+		evoCondition: "Level up with 999 Coins in the bag",
 		eggGroups: ["Undiscovered"],
 	},
 	wochien: {
@@ -17952,7 +17955,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		heightm: 2,
 		weightkg: 380,
 		color: "Green",
-		tags: ["Sub-Legendary", "Paradox"],
+		tags: ["Paradox"],
 		eggGroups: ["Undiscovered"],
 	},
 	ironvaliant: {
@@ -17965,7 +17968,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		heightm: 1.4,
 		weightkg: 35,
 		color: "White",
-		tags: ["Sub-Legendary", "Paradox"],
+		tags: ["Paradox"],
 		eggGroups: ["Undiscovered"],
 	},
 	koraidon: {
