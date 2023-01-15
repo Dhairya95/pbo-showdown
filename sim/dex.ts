@@ -39,7 +39,7 @@ import {Utils} from '../lib';
 
 const BASE_MOD = 'gen9' as ID;
 // to account for Sucrase
-const DATA_PATH = '../.data-dist';///pokemon-showdown/.data-dist';//__dirname.endsWith('.sim-dist') ? `../.data-dist` : `../data`;
+const DATA_PATH = '../data';///pokemon-showdown/.data-dist';//__dirname.endsWith('.sim-dist') ? `../.data-dist` : `../data`;
 const DATA_DIR = DATA_PATH;//path.resolve(__dirname, DATA_PATH);
 const MODS_DIR = DATA_PATH + '/mods';//path.resolve(DATA_DIR, './mods');
 
