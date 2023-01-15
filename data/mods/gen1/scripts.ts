@@ -10,6 +10,8 @@ const SKIP_LASTDAMAGE = new Set([
 	'splash', 'stunspore', 'substitute', 'supersonic', 'teleport', 'thunderwave', 'toxic', 'transform',
 ]);
 
+const TWO_TURN_MOVES = ['dig', 'fly', 'razorwind', 'skullbash', 'skyattack', 'solarbeam'];
+
 export const Scripts: ModdedBattleScriptsData = {
 	inherit: 'gen2',
 	gen: 1,
@@ -126,8 +128,6 @@ export const Scripts: ModdedBattleScriptsData = {
 			this.battle.setActiveMove(move, pokemon, target);
 
 			if (pokemon.moveThisTurn || !this.battle.runEvent('BeforeMove', pokemon, target, move)) {
-				// Prevent invulnerability from persisting until the turn ends.
-				pokemon.removeVolatile('twoturnmove');
 				// Rampage moves end without causing confusion
 				delete pokemon.volatiles['lockedmove'];
 				this.battle.clearActiveMove(true);
@@ -144,12 +144,16 @@ export const Scripts: ModdedBattleScriptsData = {
 			let lockedMove = this.battle.runEvent('LockMove', pokemon);
 			if (lockedMove === true) lockedMove = false;
 			if (
-				!lockedMove &&
-				(!pokemon.volatiles['partialtrappinglock'] || pokemon.volatiles['partialtrappinglock'].locked !== target)
+				(!lockedMove &&
+				(!pokemon.volatiles['partialtrappinglock'] || pokemon.volatiles['partialtrappinglock'].locked !== target))
 			) {
 				pokemon.deductPP(move, null, target);
 			} else {
 				sourceEffect = move;
+				if (pokemon.volatiles['twoturnmove']) {
+					// Two-turn moves like Sky Attack deduct PP on their second turn.
+					pokemon.deductPP(pokemon.volatiles['twoturnmove'].originalMove, null, target);
+				}
 			}
 			if (pokemon.volatiles['partialtrappinglock'] && target !== pokemon.volatiles['partialtrappinglock'].locked) {
 				const moveSlot = pokemon.moveSlots.find(ms => ms.id === move.id);
@@ -159,12 +163,15 @@ export const Scripts: ModdedBattleScriptsData = {
 				}
 			}
 			this.useMove(move, pokemon, target, sourceEffect);
+			// Restore PP if the move is the first turn of a charging move. Save the move from which PP should be deducted if the move succeeds.
+			if (pokemon.volatiles['twoturnmove']) {
+				pokemon.deductPP(move, -1, target);
+				pokemon.volatiles['twoturnmove'].originalMove = move.id;
+			}
 		},
 		// This function deals with AfterMoveSelf events.
 		// This leads with partial trapping moves shenanigans after the move has been used.
 		useMove(moveOrMoveName, pokemon, target, sourceEffect) {
-			const moveResult = this.useMoveInner(moveOrMoveName, pokemon, target, sourceEffect);
-
 			if (!sourceEffect && this.battle.effect.id) sourceEffect = this.battle.effect;
 			const baseMove = this.battle.dex.moves.get(moveOrMoveName);
 			let move = this.battle.dex.getActiveMove(baseMove);
@@ -184,13 +191,16 @@ export const Scripts: ModdedBattleScriptsData = {
 				// Check again, this shouldn't ever happen on Gen 1.
 				target = this.battle.getRandomTarget(pokemon, move);
 			}
+			// The charging turn of a two-turn move does not update pokemon.lastMove
+			if (!TWO_TURN_MOVES.includes(move.id) || pokemon.volatiles['twoturnmove']) pokemon.lastMove = move;
+
+			const moveResult = this.useMoveInner(moveOrMoveName, pokemon, target, sourceEffect);
 
 			if (move.id !== 'metronome') {
 				if (move.id !== 'mirrormove' ||
 					(!pokemon.side.foe.active[0]?.lastMove || pokemon.side.foe.active[0].lastMove?.id === 'mirrormove')) {
 					// The move is our 'final' move (a failed Mirror Move, or any move that isn't Metronome or Mirror Move).
 					pokemon.side.lastMove = move;
-					pokemon.lastMove = move;
 					this.battle.singleEvent('AfterMove', move, null, pokemon, target, move);
 
 					// If target fainted
@@ -832,6 +842,9 @@ export const Scripts: ModdedBattleScriptsData = {
 			// When either attack or defense are higher than 256, both are divided by 4.
 			// If that's still over 256, it rolls over (%256), which is what causes rollover bugs.
 			if (attack >= 256 || defense >= 256) {
+				if (attack >= 1024 || defense >= 1024) {
+					this.battle.hint("In Gen 1, a stat will roll over to a small number if it is larger than 1024.");
+				}
 				attack = this.battle.clampIntRange(Math.floor(attack / 4) % 256, 1);
 				// Defense isn't checked on the cartridge, but we don't want those / 0 bugs on the sim.
 				defense = Math.floor(defense / 4) % 256;

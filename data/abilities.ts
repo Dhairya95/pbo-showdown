@@ -590,6 +590,7 @@ export const Abilities: {[abilityid: string]: AbilityData} = {
 				pokemon.removeVolatile('commanding');
 			}
 		},
+		isPermanent: true,
 		name: "Commander",
 		rating: 0,
 		num: 279,
@@ -1049,6 +1050,12 @@ export const Abilities: {[abilityid: string]: AbilityData} = {
 		rating: 3,
 		num: 87,
 	},
+	earlybird: {
+		name: "Early Bird",
+		// Implemented in statuses.js
+		rating: 1.5,
+		num: 48,
+	},
 	eartheater: {
 		onTryHit(target, source, move) {
 			if (target !== source && move.type === 'Ground') {
@@ -1062,12 +1069,6 @@ export const Abilities: {[abilityid: string]: AbilityData} = {
 		name: "Earth Eater",
 		rating: 3.5,
 		num: 297,
-	},
-	earlybird: {
-		name: "Early Bird",
-		// Implemented in statuses.js
-		rating: 1.5,
-		num: 48,
 	},
 	effectspore: {
 		onDamagingHit(damage, target, source, move) {
@@ -1617,7 +1618,7 @@ export const Abilities: {[abilityid: string]: AbilityData} = {
 		onModifySpA(atk, attacker, defender, move) {
 			if (this.field.isTerrain('electricterrain') && attacker.isGrounded()) {
 				this.debug('Hadron Engine boost');
-				return this.chainModify([5325, 4096]);
+				return this.chainModify([5461, 4096]);
 			}
 		},
 		name: "Hadron Engine",
@@ -2135,23 +2136,6 @@ export const Abilities: {[abilityid: string]: AbilityData} = {
 		rating: 3,
 		num: 31,
 	},
-	lingeringaroma: {
-		onDamagingHit(damage, target, source, move) {
-			const sourceAbility = source.getAbility();
-			if (sourceAbility.isPermanent || sourceAbility.id === 'lingeringaroma') {
-				return;
-			}
-			if (this.checkMoveMakesContact(move, source, target, !source.isAlly(target))) {
-				const oldAbility = source.setAbility('lingeringaroma', target);
-				if (oldAbility) {
-					this.add('-activate', target, 'ability: Lingering Aroma', this.dex.abilities.get(oldAbility).name, '[of] ' + source);
-				}
-			}
-		},
-		name: "Lingering Aroma",
-		rating: 2,
-		num: 268,
-	},
 	limber: {
 		onUpdate(pokemon) {
 			if (pokemon.status === 'par') {
@@ -2170,6 +2154,23 @@ export const Abilities: {[abilityid: string]: AbilityData} = {
 		name: "Limber",
 		rating: 2,
 		num: 7,
+	},
+	lingeringaroma: {
+		onDamagingHit(damage, target, source, move) {
+			const sourceAbility = source.getAbility();
+			if (sourceAbility.isPermanent || sourceAbility.id === 'lingeringaroma') {
+				return;
+			}
+			if (this.checkMoveMakesContact(move, source, target, !source.isAlly(target))) {
+				const oldAbility = source.setAbility('lingeringaroma', target);
+				if (oldAbility) {
+					this.add('-activate', target, 'ability: Lingering Aroma', this.dex.abilities.get(oldAbility).name, '[of] ' + source);
+				}
+			}
+		},
+		name: "Lingering Aroma",
+		rating: 2,
+		num: 268,
 	},
 	liquidooze: {
 		onSourceTryHeal(damage, target, source, effect) {
@@ -2776,9 +2777,9 @@ export const Abilities: {[abilityid: string]: AbilityData} = {
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, pokemon) {
-			if (pokemon.effectiveWeather() === 'sunnyday') {
+			if (['sunnyday', 'desolateland'].includes(pokemon.effectiveWeather())) {
 				this.debug('Orichalcum boost');
-				return this.chainModify([5325, 4096]);
+				return this.chainModify([5461, 4096]);
 			}
 		},
 		name: "Orichalcum Pulse",
@@ -3108,7 +3109,7 @@ export const Abilities: {[abilityid: string]: AbilityData} = {
 			return 1;
 		},
 		name: "Pressure",
-		rating: 2,
+		rating: 2.5,
 		num: 46,
 	},
 	primordialsea: {
@@ -3179,12 +3180,9 @@ export const Abilities: {[abilityid: string]: AbilityData} = {
 		},
 		onWeatherChange(pokemon) {
 			if (pokemon.transformed) return;
-			// protosynthesis is not affected by Utility Umbrella
-			if (this.field.effectiveWeather() === 'sunnyday') {
-				if (!pokemon.volatiles['protosynthesis']) {
-					this.add('-activate', pokemon, 'ability: Protosynthesis');
-					pokemon.addVolatile('protosynthesis');
-				}
+			// Protosynthesis is not affected by Utility Umbrella
+			if (this.field.isWeather('sunnyday')) {
+				pokemon.addVolatile('protosynthesis');
 			} else if (!pokemon.volatiles['protosynthesis']?.fromBooster) {
 				pokemon.removeVolatile('protosynthesis');
 			}
@@ -3195,7 +3193,13 @@ export const Abilities: {[abilityid: string]: AbilityData} = {
 		},
 		condition: {
 			noCopy: true,
-			onStart(pokemon) {
+			onStart(pokemon, source, effect) {
+				if (effect?.id === 'boosterenergy') {
+					this.effectState.fromBooster = true;
+					this.add('-activate', pokemon, 'ability: Protosynthesis', '[fromitem]');
+				} else {
+					this.add('-activate', pokemon, 'ability: Protosynthesis');
+				}
 				this.effectState.bestStat = pokemon.getBestStat(false, true);
 				this.add('-start', pokemon, 'protosynthesis' + this.effectState.bestStat);
 			},
@@ -3312,10 +3316,7 @@ export const Abilities: {[abilityid: string]: AbilityData} = {
 		onTerrainChange(pokemon) {
 			if (pokemon.transformed) return;
 			if (this.field.isTerrain('electricterrain')) {
-				if (!pokemon.volatiles['quarkdrive']) {
-					this.add('-activate', pokemon, 'ability: Quark Drive');
-					pokemon.addVolatile('quarkdrive');
-				}
+				pokemon.addVolatile('quarkdrive');
 			} else if (!pokemon.volatiles['quarkdrive']?.fromBooster) {
 				pokemon.removeVolatile('quarkdrive');
 			}
@@ -3326,7 +3327,13 @@ export const Abilities: {[abilityid: string]: AbilityData} = {
 		},
 		condition: {
 			noCopy: true,
-			onStart(pokemon) {
+			onStart(pokemon, source, effect) {
+				if (effect?.id === 'boosterenergy') {
+					this.effectState.fromBooster = true;
+					this.add('-activate', pokemon, 'ability: Quark Drive', '[fromitem]');
+				} else {
+					this.add('-activate', pokemon, 'ability: Quark Drive');
+				}
 				this.effectState.bestStat = pokemon.getBestStat(false, true);
 				this.add('-start', pokemon, 'quarkdrive' + this.effectState.bestStat);
 			},
@@ -5134,18 +5141,19 @@ export const Abilities: {[abilityid: string]: AbilityData} = {
 	},
 	zerotohero: {
 		onSwitchOut(pokemon) {
-			if (pokemon.baseSpecies.baseSpecies !== 'Palafin') return;
+			if (pokemon.baseSpecies.baseSpecies !== 'Palafin' || pokemon.transformed) return;
 			if (pokemon.species.forme !== 'Hero') {
-				pokemon.formeChange('Palafin-Hero', this.effect, true, '[silent]');
+				pokemon.formeChange('Palafin-Hero', this.effect, true);
+				this.effectState.sendHeroMessage = true;
 			}
 		},
-		onSwitchIn(pokemon) {
-			if (pokemon.baseSpecies.baseSpecies !== 'Palafin' || pokemon.species.forme !== 'Hero') return;
-			if (!this.effectState.heroMessageDisplayed) {
+		onStart(pokemon) {
+			if (this.effectState.sendHeroMessage) {
 				this.add('-activate', pokemon, 'ability: Zero to Hero');
-				this.effectState.heroMessageDisplayed = true;
+				this.effectState.sendHeroMessage = false;
 			}
 		},
+		isPermanent: true,
 		name: "Zero to Hero",
 		rating: 5,
 		num: 278,

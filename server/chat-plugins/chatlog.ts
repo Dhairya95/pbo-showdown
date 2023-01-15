@@ -572,7 +572,7 @@ type SearchMatch = readonly [string, string, string, string, string];
 
 export abstract class Searcher {
 	static checkEnabled() {
-		if (Config.disableripgrep) {
+		if (global.Config.disableripgrep) {
 			throw new Chat.ErrorMessage("Log searching functionality is currently disabled.");
 		}
 	}
@@ -1110,7 +1110,7 @@ export class RipgrepLogSearcher extends Searcher {
 			}
 			const {stdout} = await ProcessManager.exec(['rg', ...options], {
 				maxBuffer: MAX_MEMORY,
-				cwd: `${__dirname}/../../`,
+				cwd: FS.ROOT_PATH,
 			});
 			results = stdout.split(resultSep);
 		} catch (e: any) {

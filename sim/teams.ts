@@ -7,7 +7,6 @@
  * @license MIT
  */
 
-import exp = require('constants');
 import {Dex, toID} from './dex';
 import type {PRNG, PRNGSeed} from './prng';
 

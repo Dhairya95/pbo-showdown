@@ -5,12 +5,12 @@
 
 const {testTeam} = require('./tools');
 const assert = require('../assert');
-const Teams = require('./../../sim/teams').Teams;
-const Dex = require('./../../sim/dex').Dex;
+const Teams = require('./../../dist/sim/teams').Teams;
+const Dex = require('./../../dist/sim/dex').Dex;
 
 describe('[Gen 9] Random Battle', () => {
 	const options = {format: 'gen9randombattle'};
-	const setsJSON = require(`../../data/random-sets.json`);
+	const setsJSON = require(`../../dist/data/random-sets.json`);
 	const dex = Dex.forFormat(options.format);
 
 	it('all Pokemon should have 4 moves, except for Ditto (slow)', function () {
@@ -35,15 +35,21 @@ describe('[Gen 9] Random Battle', () => {
 				const teraTypes = set.teraTypes;
 				let teamDetails = {};
 				// Go through all possible teamDetails combinations, if necessary
-				for (let i = 0; i < 8; i++) {
-					const defog = i % 2;
-					const stealthRock = Math.floor(i / 2) % 2;
-					const stickyWeb = Math.floor(i / 4) % 2;
-					teamDetails = {defog, stealthRock, stickyWeb};
-					for (let j = 0; j < rounds; j++) {
+				for (let j = 0; j < rounds; j++) {
+					// Generate a moveset as the lead, teamDetails is always empty for this
+					const teraType = teraTypes[j % teraTypes.length];
+					const movePool = set.movepool.map(m => dex.moves.get(m).id);
+					const moveSet = generator.randomMoveset(types, abilities, {}, species, true, false, movePool, teraType, role);
+					for (const move of moveSet) moves.delete(move);
+					if (!moves.size) break;
+					// Generate a moveset for each combination of relevant teamDetails
+					for (let i = 0; i < 8; i++) {
+						const defog = i % 2;
+						const stealthRock = Math.floor(i / 2) % 2;
+						const stickyWeb = Math.floor(i / 4) % 2;
+						teamDetails = {defog, stealthRock, stickyWeb};
 						// randomMoveset() deletes moves from the movepool, so recreate it every time
 						const movePool = set.movepool.map(m => dex.moves.get(m).id);
-						const teraType = teraTypes[j % teraTypes.length];
 						const moveSet = generator.randomMoveset(types, abilities, teamDetails, species, false, false, movePool, teraType, role);
 						for (const move of moveSet) moves.delete(move);
 						if (!moves.size) break;
