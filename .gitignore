@@ -51,6 +51,7 @@ tmp/**/*
 
 downloads
 dist
+cobblemon-showdown
 
 # egg related
 develop-eggs

@@ -33,7 +33,12 @@ try {
 // for some reason, esbuild won't be requirable until a tick has passed
 // see https://stackoverflow.com/questions/53270058/node-cant-find-certain-modules-after-synchronous-install
 setImmediate(() => {
-	require('./tools/build-utils').transpile(force, decl);
+	if (['--cobbled', '--c'].includes(process.argv[2]) || ['--cobbled', '--c'].includes(process.argv[3])) {
+		require('./tools/build-utils').transpileCobbled(force, decl);
+	}
+	else {
+		require('./tools/build-utils').transpile(force, decl);
+	}
 });
 
 // Make sure config.js exists. If not, copy it over synchronously from
