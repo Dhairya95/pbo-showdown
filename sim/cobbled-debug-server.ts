@@ -36,7 +36,7 @@ function onData(socket: Net.Socket, chunk: Buffer, battleMap: Map<string, Battle
 			const species = JSON.parse(speciesJson) as Species;
 			CobblemonCache.registerSpecies(species);
 			console.log('Received', species.id);
-			socket.write('ready');
+			socket.write('ACK');
 		} else {
 			const [battleId, showdownMsg] = line.split('~');
 			const battleStream = battleMap.get(battleId);
