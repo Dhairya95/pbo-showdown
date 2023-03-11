@@ -1,8 +1,8 @@
 import {BattleStream} from "./battle-stream";
 import {Dex} from "./dex";
 import * as Net from "net";
-
-const cobbledModId = 'cobblemon';
+import { Species } from "./dex-species";
+import * as CobblemonCache from "./cobblemon-cache";
 
 export function startServer(port: number): void {
 	const server = Net.createServer();
@@ -29,12 +29,17 @@ function onData(socket: Net.Socket, chunk: Buffer, battleMap: Map<string, Battle
 			getCobbledAbilityIds(socket);
 		} else if (line === '>getCobbledItemIds') {
 			getCobbledItemIds(socket);
-		} else if (line === '>afterCobbledSpeciesInit') {
-			afterCobbledSpeciesInit();
+		} else if (line === '>resetSpeciesData') {
+			CobblemonCache.resetSpecies();
+		} else if (line.startsWith('>receiveSpeciesData')) {
+			const speciesJson = line.replace(`>receiveSpeciesData `, '');
+			const species = JSON.parse(speciesJson) as Species;
+			CobblemonCache.registerSpecies(species);
+			console.log('Received', species.id);
+			socket.write('ready');
 		} else {
 			const [battleId, showdownMsg] = line.split('~');
 			const battleStream = battleMap.get(battleId);
-
 			if (battleStream) {
 				try {
 					void battleStream.write(showdownMsg);
@@ -72,23 +77,18 @@ function onConnection(socket: Net.Socket, battleMap: Map<string, BattleStream>) 
 }
 
 function getCobbledMoves(socket: Net.Socket) {
-	const payload = JSON.stringify(Dex.mod(cobbledModId).moves.all());
+	const payload = JSON.stringify(Dex.mod(CobblemonCache.MOD_ID).moves.all());
 	socket.write(padNumber(payload.length, 8) + payload);
 }
 
 function getCobbledAbilityIds(socket: Net.Socket) {
-	const payload = JSON.stringify(Dex.mod(cobbledModId).abilities.all().map(ability => ability.id));
+	const payload = JSON.stringify(Dex.mod(CobblemonCache.MOD_ID).abilities.all().map(ability => ability.id));
 	socket.write(padNumber(payload.length, 8) + payload);
 }
 
 function getCobbledItemIds(socket: Net.Socket) {
-	const payload = JSON.stringify(Dex.mod(cobbledModId).items.all().map(item => item.id));
+	const payload = JSON.stringify(Dex.mod(CobblemonCache.MOD_ID).items.all().map(item => item.id));
 	socket.write(padNumber(payload.length, 8) + payload);
-}
-
-function afterCobbledSpeciesInit() {
-	Dex.modsLoaded = false;
-	Dex.includeMods();
 }
 
 function padNumber(num: number, size: number): string {
