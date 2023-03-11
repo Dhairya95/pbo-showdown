@@ -7,19 +7,24 @@
  */
 
 // eslint-disable-next-line strict
-const BS = require('./sim/battle-stream');
-const Dex = require('./sim/dex').Dex;
+
+const BS = require("./sim/battle-stream");
+const Dex = require("./sim/dex").Dex;
+const CobblemonCache = require("./sim/cobblemon-cache");
 
 const battleMap = new Map();
-const cobbledModId = 'cobblemon';
+const cobbledModId = "cobblemon";
 
 function startBattle(graalShowdown, battleId, requestMessages) {
 	const battleStream = new BS.BattleStream();
 	battleMap.set(battleId, battleStream);
 
-	console.log = console.error = console.warn = function (value) {
-		graalShowdown.log(value);
-	};
+	console.log =
+		console.error =
+		console.warn =
+			function (value) {
+				graalShowdown.log(value);
+			};
 
 	// Join messages with new line
 	try {
@@ -50,14 +55,25 @@ function getCobbledMoves() {
 }
 
 function getCobbledAbilityIds() {
-	return JSON.stringify(Dex.mod(cobbledModId).abilities.all().map(ability => ability.id));
+	return JSON.stringify(
+		Dex.mod(cobbledModId)
+			.abilities.all()
+			.map((ability) => ability.id)
+	);
 }
 
 function getCobbledItemIds() {
-	return JSON.stringify(Dex.mod(cobbledModId).items.all().map(item => item.id));
+	return JSON.stringify(
+		Dex.mod(cobbledModId)
+			.items.all()
+			.map((item) => item.id)
+	);
 }
 
-function afterCobbledSpeciesInit() {
-	Dex.modsLoaded = false;
-	Dex.includeMods();
+function receiveSpeciesData(speciesArray) {
+	CobblemonCache.resetSpecies();
+	speciesArray.forEach((speciesJson) => {
+		const speciesData = JSON.parse(speciesJson);
+		CobblemonCache.registerSpecies(speciesData);
+	});
 }
