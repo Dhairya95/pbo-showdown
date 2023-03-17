@@ -139,7 +139,7 @@ export const Formats: FormatList = [
 			'Standard', 'Terastal Clause', 'Sleep Moves Clause', 'Accuracy Moves Clause', '!Sleep Clause Mod',
 		],
 		banlist: [
-			'Chi-Yu', 'Cinderace', 'Dragonite', 'Flutter Mane', 'Gholdengo', 'Koraidon', 'Mimikyu', 'Miraidon', 'Scream Tail',
+			'Chi-Yu', 'Cinderace', 'Dragonite', 'Flutter Mane', 'Gholdengo', 'Greninja', 'Koraidon', 'Mimikyu', 'Miraidon', 'Scream Tail',
 			'Moody', 'Focus Band', 'Focus Sash', 'King\'s Rock', 'Quick Claw', 'Acupressure', 'Perish Song',
 		],
 	},
@@ -347,7 +347,7 @@ export const Formats: FormatList = [
 		mod: 'gen9',
 		searchShow: false,
 		ruleset: ['[Gen 9] National Dex UU'],
-		banlist: ['ND UU', 'ND RUBL', 'Drizzle'],
+		banlist: ['ND UU', 'ND RUBL', 'Drizzle', 'Light Clay'],
 	},
 	{
 		name: "[Gen 9] National Dex Monotype",
@@ -388,10 +388,11 @@ export const Formats: FormatList = [
 		mod: 'gen9',
 		ruleset: ['-Nonexistent', 'Standard NatDex', 'Forme Clause', 'Sleep Moves Clause', 'Ability Clause = 2', 'OHKO Clause', 'Evasion Moves Clause', 'Dynamax Clause', 'CFZ Clause', '!Obtainable'],
 		banlist: [
-			'Eternatus-Eternamax', 'Groudon-Primal', 'Rayquaza-Mega', 'Shedinja', 'Cramorant-Gorging', 'Calyrex-Shadow', 'Darmanitan-Galar-Zen', 'Arena Trap',
-			'Contrary', 'Gorilla Tactics', 'Huge Power', 'Illusion', 'Innards Out', 'Magnet Pull', 'Moody', 'Neutralizing Gas', 'Parental Bond', 'Pure Power',
-			'Shadow Tag', 'Stakeout', 'Water Bubble', 'Wonder Guard', 'Gengarite', 'Belly Drum', 'Bolt Beak', 'Chatter', 'Double Iron Bash', 'Electrify',
-			'Last Respects', 'Octolock', 'Rage Fist', 'Revival Blessing', 'Shed Tail', 'Shell Smash', 'Comatose + Sleep Talk', 'Imprison + Transform',
+			'Cramorant-Gorging', 'Calyrex-Shadow', 'Darmanitan-Galar-Zen', 'Eternatus-Eternamax', 'Groudon-Primal', 'Rayquaza-Mega', 'Shedinja',
+			'Zygarde-Complete', 'Arena Trap', 'Contrary', 'Gorilla Tactics', 'Huge Power', 'Illusion', 'Innards Out', 'Magnet Pull', 'Moody',
+			'Neutralizing Gas', 'Parental Bond', 'Pure Power', 'Shadow Tag', 'Stakeout', 'Water Bubble', 'Wonder Guard', 'Gengarite', 'Belly Drum',
+			'Bolt Beak', 'Chatter', 'Double Iron Bash', 'Electrify', 'Last Respects', 'Octolock', 'Rage Fist', 'Revival Blessing', 'Shed Tail',
+			'Shell Smash', 'Comatose + Sleep Talk', 'Imprison + Transform',
 		],
 		restricted: ['Arceus'],
 		onValidateTeam(team, format) {
@@ -560,10 +561,10 @@ export const Formats: FormatList = [
 		// searchShow: false,
 		ruleset: ['Standard OMs', 'Sleep Clause Mod', 'Min Source Gen = 9'],
 		banlist: [
-			'Chi-Yu', 'Chien-Pao', 'Cloyster', 'Espathra', 'Flutter Mane', 'Great Tusk', 'Houndstone', 'Iron Bundle', 'Koraidon',
-			'Miraidon', 'Palafin', 'Riolu', 'Weavile', 'Arena Trap', 'Moody', 'Serene Grace', 'Shadow Tag', 'Covert Cloak', 'Baton Pass',
+			'Annihilape', 'Azumarill', 'Chi-Yu', 'Chien-Pao', 'Cloyster', 'Dragonite', 'Espathra', 'Flutter Mane', 'Great Tusk', 'Houndstone', 'Iron Bundle',
+			'Koraidon', 'Miraidon', 'Palafin', 'Riolu', 'Arena Trap', 'Moody', 'Serene Grace', 'Shadow Tag', 'Covert Cloak', 'Beat Up', 'Baton Pass',
 		],
-		restricted: ['Dynamic Punch', 'Fury Cutter', 'Grass Knot', 'Inferno', 'Low Kick', 'Nuzzle', 'Power Trip', 'Reversal', 'Spit Up', 'Stored Power', 'Zap Cannon'],
+		restricted: ['Dynamic Punch', 'Flail', 'Fury Cutter', 'Grass Knot', 'Heavy Slam', 'Inferno', 'Low Kick', 'Nuzzle', 'Power Trip', 'Reversal', 'Spit Up', 'Stored Power', 'Zap Cannon'],
 		validateSet(set, teamHas) {
 			const item = set.item;
 			const species = this.dex.species.get(set.species);
@@ -583,9 +584,10 @@ export const Formats: FormatList = [
 			const accuracyLoweringMove =
 				move.secondaries?.some(secondary => secondary.boosts?.accuracy && secondary.boosts?.accuracy < 0);
 			const flinchMove = move.secondaries?.some(secondary => secondary.volatileStatus === 'flinch');
+			const freezeMove = move.secondaries?.some(secondary => secondary.status === 'frz') || move.id === 'triattack';
 			if (this.ruleTable.isRestricted(`move:${move.id}`) ||
 				((accuracyLoweringMove || move.ohko || move.multihit || move.id === 'beatup' || move.flags['charge'] ||
-					move.priority > 0 || move.damageCallback || flinchMove || move.selfSwitch) &&
+					move.priority > 0 || move.damageCallback || flinchMove || freezeMove || move.selfSwitch) &&
 				!this.ruleTable.has(`+move:${move.id}`))) {
 				problems.push(`The move ${move.name} can't be used as an item.`);
 			}
@@ -717,8 +719,8 @@ export const Formats: FormatList = [
 		// searchShow: false,
 		ruleset: ['Standard OMs', 'Sleep Moves CLause', 'Tera Type Preview', 'Min Source Gen = 9'],
 		banlist: [
-			'Annihilape', 'Chi-Yu', 'Chien-Pao', 'Espathra', 'Flutter Mane', 'Houndstone', 'Iron Bundle', 'Koraidon',
-			'Miraidon', 'Palafin', 'Arena Trap', 'Moody', 'Shadow Tag', 'Booster Energy', 'King\'s Rock', 'Baton Pass',
+			'Annihilape', 'Chi-Yu', 'Chien-Pao', 'Cyclizar', 'Espathra', 'Flutter Mane', 'Houndstone', 'Iron Bundle', 'Koraidon',
+			'Miraidon', 'Palafin', 'Arena Trap', 'Moody', 'Shadow Tag', 'Booster Energy', 'Heat Rock', 'King\'s Rock', 'Baton Pass',
 		],
 		onSwitchIn(pokemon) {
 			if (this.turn === 0) {
@@ -783,8 +785,8 @@ export const Formats: FormatList = [
 		banlist: [
 			'Annihilape', 'Baxcalibur', 'Dragapult', 'Flutter Mane', 'Great Tusk', 'Gholdengo', 'Houndstone', 'Iron Bundle', 'Iron Hands',
 			'Iron Valiant', 'Koraidon', 'Miraidon', 'Noivern', 'Slaking', 'Walking Wake', 'Arena Trap', 'Comatose', 'Contrary', 'Fur Coat',
-			'Gorilla Tactics', 'Huge Power', 'Ice Scales', 'Illusion', 'Imposter', 'Innards Out', 'Magic Bounce', 'Magnet Pull', 'Moody',
-			'Neutralizing Gas', 'Orichalcum Pulse', 'Parental Bond', 'Poison Heal', 'Pure Power', 'Shadow Tag', 'Simple', 'Speed Boost',
+			'Good as Gold', 'Gorilla Tactics', 'Huge Power', 'Ice Scales', 'Illusion', 'Imposter', 'Innards Out', 'Magic Bounce', 'Magnet Pull',
+			'Moody', 'Neutralizing Gas', 'Orichalcum Pulse', 'Parental Bond', 'Poison Heal', 'Pure Power', 'Shadow Tag', 'Simple', 'Speed Boost',
 			'Stakeout', 'Unburden', 'Water Bubble', 'Wonder Guard', 'King\'s Rock', 'Baton Pass', 'Revival Blessing',
 		],
 	},
@@ -799,9 +801,9 @@ export const Formats: FormatList = [
 		mod: 'gen9',
 		ruleset: ['-Nonexistent', 'OHKO Clause', 'Evasion Clause', 'Species Clause', 'Team Preview', 'HP Percentage Mod', 'Cancel Mod', 'Sleep Moves Clause', 'Endless Battle Clause'],
 		banlist: [
-			'Calyrex-Shadow', 'Arena Trap', 'Contrary', 'Huge Power', 'Illusion', 'Innards Out', 'Magnet Pull', 'Moody', 'Neutralizing Gas',
-			'Parental Bond', 'Poison Heal', 'Pure Power', 'Shadow Tag', 'Stakeout', 'Water Bubble', 'Wonder Guard', 'Comatose + Sleep Talk',
-			'Belly Drum', 'Last Respects', 'Revival Blessing', 'Shed Tail', 'Shell Smash', 'Rage Fist',
+			'Calyrex-Shadow', 'Zacian-Crowned', 'Arena Trap', 'Contrary', 'Huge Power', 'Illusion', 'Innards Out', 'Magnet Pull', 'Moody',
+			'Neutralizing Gas', 'Parental Bond', 'Poison Heal', 'Pure Power', 'Shadow Tag', 'Stakeout', 'Water Bubble', 'Wonder Guard',
+			'Comatose + Sleep Talk', 'Belly Drum', 'Last Respects', 'Quiver Dance', 'Rage Fist', 'Revival Blessing', 'Shed Tail', 'Shell Smash',
 		],
 	},
 	{
@@ -814,8 +816,8 @@ export const Formats: FormatList = [
 
 		mod: 'mixandmega',
 		ruleset: ['Standard OMs', 'Evasion Items Clause', 'Evasion Abilities Clause', 'Sleep Moves Clause', 'Min Source Gen = 9'],
-		banlist: ['Koraidon', 'Miraidon', 'Beedrillite', 'Blazikenite', 'Gengarite', 'Kangaskhanite', 'Mawilite', 'Medichamite', 'Moody', 'Shadow Tag', 'Baton Pass', 'Shed Tail'],
-		restricted: ['Flutter Mane', 'Gengar', 'Iron Bundle', 'Kilowattrel', 'Roaring Moon', 'Sandy Shocks', 'Slaking'],
+		banlist: ['Koraidon', 'Miraidon', 'Beedrillite', 'Blazikenite', 'Gengarite', 'Kangaskhanite', 'Mawilite', 'Medichamite', 'Moody', 'Rusted Sword', 'Shadow Tag', 'Baton Pass', 'Shed Tail'],
+		restricted: ['Flutter Mane', 'Gengar', 'Iron Bundle', 'Kilowattrel', 'Sandy Shocks', 'Slaking'],
 		onValidateTeam(team) {
 			const itemTable = new Set<ID>();
 			for (const set of team) {
@@ -874,6 +876,7 @@ export const Formats: FormatList = [
 		desc: `Each Pok&eacute;mon receives one base stat from a God (AG/Uber Pok&eacute;mon) depending on its position in the team. If there is no Uber Pok&eacute;mon, it uses the Pok&eacute;mon in the first slot.`,
 		threads: [
 			`&bullet; <a href="https://www.smogon.com/forums/threads/3710734/">Godly Gift</a>`,
+			`&bullet; <a href="https://www.smogon.com/forums/threads/3718065/">Godly Gift Resources</a>`,
 		],
 
 		mod: 'gen9',
@@ -1476,7 +1479,7 @@ export const Formats: FormatList = [
 		mod: 'thecardgame',
 		searchShow: false,
 		ruleset: ['Standard OMs', 'Sleep Moves Clause', 'Evasion Abilities Clause', 'Evasion Items Clause', 'Min Source Gen = 9'],
-		banlist: ['Annihilape', 'Cyclizar', 'Dragonite', 'Espathra', 'Houndstone', 'Koraidon', 'Miraidon', 'Noivern', 'Palafin', 'Arena Trap', 'Moody', 'Shadow Tag', 'Baton Pass'],
+		banlist: ['Annihilape', 'Baxcalibur', 'Chi-Yu', 'Cyclizar', 'Dragonite', 'Espathra', 'Houndstone', 'Hydreigon', 'Koraidon', 'Miraidon', 'Noivern', 'Palafin', 'Walking Wake', 'Arena Trap', 'Moody', 'Shadow Tag', 'Baton Pass'],
 		onBegin() {
 			for (const pokemon of this.getAllPokemon()) {
 				pokemon.hpType = pokemon.hpType.replace(/(Ghost|Fairy)/g, 'Psychic')
@@ -1598,11 +1601,11 @@ export const Formats: FormatList = [
 		mod: 'trademarked',
 		searchShow: false,
 		ruleset: ['Standard OMs', 'Sleep Moves Clause', 'Min Source Gen = 9'],
-		banlist: ['Flutter Mane', 'Koraidon', 'Miraidon', 'Slaking', 'Arena Trap', 'Magnet Pull', 'Moody', 'Shadow Tag', 'Baton Pass'],
+		banlist: ['Flutter Mane', 'Koraidon', 'Miraidon', 'Slaking', 'Arena Trap', 'Magnet Pull', 'Moody', 'Shadow Tag', 'Baton Pass', 'Revival Blessing'],
 		restricted: [
-			'Baneful Bunker', 'Block', 'Copycat', 'Detect', 'Destiny Bond', 'Encore', 'Fairy Lock', 'Ingrain', 'Instruct', 'Mean Look',
-			'move:Metronome', 'Protect', 'Revival Blessing', 'Roar', 'Silk Trap', 'Spiky Shield', 'Sleep Talk', 'Shed Tail', 'Shell Smash',
-			'Substitute', 'Trick Room', 'Whirlwind',
+			'Baneful Bunker', 'Block', 'Chilly Reception', 'Copycat', 'Detect', 'Destiny Bond', 'Encore', 'Fairy Lock', 'Ingrain', 'Instruct',
+			'Mean Look', 'move:Metronome', 'Parting Shot', 'Protect', 'Roar', 'Silk Trap', 'Spiky Shield', 'Sleep Talk', 'Shed Tail', 'Shell Smash',
+			'Substitute', 'Teleport', 'Trick Room', 'Whirlwind',
 		],
 		onValidateTeam(team, format, teamHas) {
 			const problems = [];
@@ -2533,8 +2536,8 @@ export const Formats: FormatList = [
 		mod: 'gen4',
 		gameType: 'doubles',
 		ruleset: ['Standard', '!Sleep Clause Mod'],
-		banlist: ['AG', 'Uber', 'Soul Dew', 'Dark Void'],
-		unbanlist: ['Garchomp', 'Latios', 'Manaphy', 'Mew', 'Salamence', 'Wobbuffet', 'Wynaut'],
+		banlist: ['AG', 'Uber', 'Soul Dew', 'Dark Void', 'Sand Veil'],
+		unbanlist: ['Latios', 'Manaphy', 'Mew', 'Salamence', 'Wobbuffet', 'Wynaut'],
 	},
 	{
 		name: "[Gen 3] Doubles OU",
