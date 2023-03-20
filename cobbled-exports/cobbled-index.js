@@ -19,13 +19,6 @@ function startBattle(graalShowdown, battleId, requestMessages) {
 	const battleStream = new BS.BattleStream();
 	battleMap.set(battleId, battleStream);
 
-	console.log =
-		console.error =
-		console.warn =
-			function (value) {
-				graalShowdown.log(value);
-			};
-
 	// Join messages with new line
 	try {
 		for (const element of requestMessages) {
