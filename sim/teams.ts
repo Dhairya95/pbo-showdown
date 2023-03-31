@@ -225,8 +225,8 @@ export const Teams = new class Teams {
 
 			if (set.pokeball || set.hpType || set.gigantamax ||
 				(set.dynamaxLevel !== undefined && set.dynamaxLevel !== 10) || set.teraType) {
-				buf += ',' + (set.hpType || '');
 				buf += ',' + this.packName(set.pokeball || '');
+				buf += ',' + (set.hpType || '');
 				buf += ',' + (set.gigantamax ? 'G' : '');
 				buf += ',' + (set.dynamaxLevel !== undefined && set.dynamaxLevel !== 10 ? set.dynamaxLevel : '');
 				buf += ',' + (set.teraType || '');
@@ -394,8 +394,8 @@ export const Teams = new class Teams {
 			}
 			if (misc) {
 				set.happiness = (misc[0] ? Number(misc[0]) : 255);
-				set.hpType = misc[1] || '';
-				set.pokeball = this.unpackName(misc[2] || '', Dex.items);
+				set.pokeball = this.unpackName(misc[1] || '', Dex.items);
+				set.hpType = misc[2] || '';
 				set.gigantamax = !!misc[3];
 				set.dynamaxLevel = (misc[4] ? Number(misc[4]) : 10);
 				set.teraType = misc[5];
