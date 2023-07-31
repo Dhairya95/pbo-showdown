@@ -25,6 +25,7 @@ import {State} from './state';
 import {BattleQueue, Action} from './battle-queue';
 import {BattleActions} from './battle-actions';
 import {Utils} from '../lib';
+import * as BagItems from './bag-items';
 declare const __version: any;
 
 export type ChannelID = 0 | 1 | 2 | 3 | 4;
@@ -1192,6 +1193,16 @@ export class Battle {
 			}
 		}
 		return null;
+	}
+
+	getPokemonById(pokemonId: string) {
+		for (const side of this.sides) {
+			for (const pokemon of side.pokemon) {
+				if (pokemon.uuid === pokemonId) {
+					return pokemon;
+				}
+			}
+		}
 	}
 
 	getAllPokemon() {
@@ -2366,7 +2377,7 @@ export class Battle {
 	capture(pokemon: Pokemon) {
 		if (this.ended) return;
 		if (!pokemon.fainted) {
-			this.add('capture', pokemon)
+			this.add('capture', pokemon);
 			if (pokemon.side.pokemonLeft) pokemon.side.pokemonLeft--;
 			this.singleEvent('End', pokemon.getAbility(), pokemon.abilityState, pokemon);
 			pokemon.clearVolatile(false);
@@ -2404,7 +2415,7 @@ export class Battle {
 	updatePP() {
 		for (const side of this.sides) {
 			for (const pokemon of side.pokemon) {
-				this.add('pp_update', `${side.id}: ${pokemon.uuid}`, pokemon.moveSlots.map(move => `${move.id}: ${move.pp}`).join(', '));
+				pokemon.updatePP();
 			}
 		}
 	}
@@ -2915,6 +2926,44 @@ export class Battle {
 
 		this.go();
 		if (this.log.length - this.sentLogPos > 500) this.sendUpdates();
+	}
+
+	splitFirst(str: string, delimiter: string, limit = 1) {
+		const splitStr: string[] = [];
+		while (splitStr.length < limit) {
+			const delimiterIndex = str.indexOf(delimiter);
+			if (delimiterIndex >= 0) {
+				splitStr.push(str.slice(0, delimiterIndex));
+				str = str.slice(delimiterIndex + delimiter.length);
+			} else {
+				splitStr.push(str);
+				str = '';
+			}
+		}
+		splitStr.push(str);
+		return splitStr;
+	}
+
+	useItem(message: string) {
+		if (message === undefined) throw new Error(`No message offered for useItem`);
+		const [pokemonId, itemName, itemId, data] = this.splitFirst(message, ' ', 4);
+		const messageStart = `${pokemonId} ${itemName} ${itemId}`;
+		var dataArray = message.substring(message.indexOf(messageStart) + messageStart.length).split(' ').filter(v => v != '');
+
+		if (pokemonId === undefined) throw new Error(`Pokemon ID required for useitem`);
+		if (itemName === undefined) throw new Error('Item Name required for useitem')
+		if (itemId === undefined) throw new Error('Item ID required for useitem');
+		if (!BagItems.has(itemId)) {
+			throw new Error('Invalid item: ' + itemId); // Maybe throw an error or something idk
+		}
+		const item = BagItems.getItem(itemId);
+		const pokemon = this.getPokemonById(pokemonId);
+		if (!pokemon) throw new Error(`No pokemon found for ID ${pokemonId}`);
+		if (this.ended) {
+			return;
+		}
+		this.add('bagitem', pokemon.uuid, itemName, itemId);
+		item.use(this, pokemon, itemId, dataArray);
 	}
 
 	undoChoice(sideid: SideID) {

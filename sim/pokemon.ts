@@ -473,7 +473,11 @@ export class Pokemon {
 		this.clearVolatile();
 
 		// COBBLED: Apply current health
-		this.hp = this.set.currentHealth || this.maxhp;
+		if (this.set.currentHealth == 0 || this.set.currentHealth) {
+			this.hp = this.set.currentHealth;
+		} else {
+			this.hp = this.maxhp;
+		}
 		// COBBLED: Apply status
 		if(!!this.set.status) {
 			let status = this.battle.dex.conditions.get(this.set.status);
@@ -484,6 +488,11 @@ export class Pokemon {
 				this.statusState.startTime = this.set.statusDuration;
 				this.statusState.time = this.set.statusDuration;
 			}
+		}
+
+		if (this.hp == 0) {
+			this.status = 'fnt' as ID;
+			this.fainted = true;
 		}
 	}
 
@@ -1648,6 +1657,10 @@ export class Pokemon {
 			return false;
 		}
 		return true;
+	}
+
+	updatePP() {
+		this.battle.add('pp_update', `${this.side.id}: ${this.uuid}`, this.moveSlots.map(move => `${move.id}: ${move.pp}`).join(', '));
 	}
 
 	/**

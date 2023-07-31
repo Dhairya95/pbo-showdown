@@ -132,7 +132,7 @@ export class Side {
 			this.active = [null!];
 		}
 
-		this.pokemonLeft = this.pokemon.length;
+		this.pokemonLeft = this.pokemon.filter(pk => !pk.fainted).length;
 		this.faintedLastTurn = null;
 		this.faintedThisTurn = null;
 		this.totalFainted = 0;
@@ -1001,6 +1001,14 @@ export class Side {
 			case 'skip':
 				if (data) return this.emitChoiceError(`Unrecognized data after "pass": ${data}`);
 				if (!this.choosePass()) return false;
+				break;
+			case 'useitem':
+				try {
+					this.battle.useItem(data);
+					this.choosePass();
+				} catch (e) {
+					console.error(e);
+				}
 				break;
 			case 'auto':
 			case 'default':
