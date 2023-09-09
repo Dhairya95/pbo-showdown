@@ -206,7 +206,9 @@ export class Battle {
 
 		this.format = format;
 		this.dex = Dex.forFormat(format);
-		this.gen = this.dex.gen;
+		// COBBLED ========
+		this.gen = options.format.gen || this.dex.gen;
+		// ==================================
 		this.ruleTable = this.dex.formats.getRuleTable(format);
 
 		this.trunc = this.dex.trunc;
