@@ -530,7 +530,7 @@ export const commands: Chat.ChatCommands = {
 
 		message = this.checkChat(message);
 		if (!message) return;
-		Chat.sendPM(`/botmsg ${message}`, user, targetUser, targetUser);
+		Chat.PrivateMessages.send(`/botmsg ${message}`, user, targetUser, targetUser);
 	},
 	botmsghelp: [`/botmsg [username], [message] - Send a private message to a bot without feedback. For room bots, must use in the room the bot is auth in.`],
 
@@ -745,6 +745,8 @@ export const commands: Chat.ChatCommands = {
 				void Rooms.PM.respawn();
 				// respawn datasearch processes (crashes otherwise, since the Dex data in the PM can be out of date)
 				void Chat.plugins.datasearch?.PM?.respawn();
+				// update teams global
+				global.Teams = require('../../sim/teams').Teams;
 				// broadcast the new formats list to clients
 				Rooms.global.sendAll(Rooms.global.formatListText);
 				this.sendReply("DONE");
@@ -763,6 +765,8 @@ export const commands: Chat.ChatCommands = {
 
 				this.sendReply("Hotpatching validator...");
 				void TeamValidatorAsync.PM.respawn();
+				// update teams global too while we're at it
+				global.Teams = require('../../sim/teams').Teams;
 				this.sendReply("DONE. Any battles started after now will have teams be validated according to the new code.");
 			} else if (target === 'punishments') {
 				if (lock['punishments']) {
@@ -1355,6 +1359,40 @@ export const commands: Chat.ChatCommands = {
 	},
 	updateloginserverhelp: [
 		`/updateloginserver - Updates and restarts the loginserver. Requires: console access`,
+	],
+
+	async updateclient(target, room, user) {
+		this.canUseConsole();
+		this.sendReply('Restarting...');
+		const [result, err] = await LoginServer.request('rebuildclient', {
+			full: toID(target) === 'full',
+		});
+		if (err) {
+			Rooms.global.notifyRooms(
+				['staff', 'development'],
+				`|c|&|/log ${user.name} used /updateclient - but something failed while updating.`
+			);
+			return this.errorReply(err.message + '\n' + err.stack);
+		}
+		if (!result) return this.errorReply('No result received.');
+		this.stafflog(`[o] ${result.success || ""} [e] ${result.actionerror || ""}`);
+		if (result.actionerror) {
+			return this.errorReply(result.actionerror);
+		}
+		let message = `${user.name} used /updateclient`;
+		if (result.updated) {
+			this.sendReply(`DONE. Client updated.`);
+		} else {
+			message += ` - but something failed while updating.`;
+			this.errorReply(`FAILED. Conflicts were found while updating.`);
+		}
+		Rooms.global.notifyRooms(
+			['staff', 'development'], `|c|&|/log ${message}`
+		);
+	},
+	updateclienthelp: [
+		`/updateclient [full] - Update the client source code. Provide the argument 'full' to make it a full rebuild.`,
+		`Requires: & console access`,
 	],
 
 	async rebuild() {
